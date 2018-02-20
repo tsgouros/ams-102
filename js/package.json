@@ -1,5 +1,5 @@
 {
-  "name": "AMS-102 beginning",
+  "name": "AMS-102-beginning",
   "version": "1.0.0",
   "description": "This is the start of the AMS-102 work.",
   "main": "index.js",
@@ -20,7 +20,7 @@
   },
   "keywords": [],
   "author": "tsgouros",
-  "license": "ISC",
+  "license": "NA",
   "dependencies": {
     "font-awesome": "^4.7.0",
     "kw-web-suite": "^5.0.0",
