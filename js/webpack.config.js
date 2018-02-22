@@ -1,9 +1,10 @@
 var path = require('path');
+var HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   entry: ['./src/index.js'],
   output: {
-    path: __dirname + '/www',
+    path: path.resolve(__dirname, 'www'), // Was __dirname + '/www'
     filename: 'ams102.js'
 
   },
@@ -49,5 +50,12 @@ module.exports = {
 
   stats: {
     errorDetails: true
-  }
+  },
+
+  plugins: [
+    new HtmlWebpackPlugin({
+      title: "AMS-102 App",
+      filename: 'index.html'
+    }),
+  ]
 };
