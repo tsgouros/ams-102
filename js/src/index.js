@@ -18,29 +18,31 @@ import ReactDOM from 'react-dom';
 
 import SmartConnect from 'wslink/src/SmartConnect';
 
-
-ReactDOM.render(<h1>Hello Parav0000011223445 World..!</h1>,
-    document.getElementById('app'));
-
-document.body.style.padding = '50';
-document.body.style.margin = '50';
-
-const divRenderer = document.createElement('div');
-document.body.appendChild(divRenderer);
-
-divRenderer.style.position = 'relative';
-divRenderer.style.width = '100vw';
-divRenderer.style.height = '100vh';
-divRenderer.style.overflow = 'hidden';
-
 const config = { sessionURL: 'ws://localhost:1234/ws' };
 const smartConnect = SmartConnect.newInstance({ config });
+
+const amsProtocols = {
+  testbuttonService: (session) => {
+    return {
+      testbutton: () => {
+        console.log("hi there sailor******************");
+        a = session.call('amsprotocol.testbutton',[])
+          .then((result) => log('result' + result));
+        return a;
+      },
+    };
+  },
+};
+
 smartConnect.onConnectionReady((connection) => {
-  const pvwClient = ParaViewWebClient.createClient(connection, [
-    'MouseHandler',
-    'ViewPort',
-    'ViewPortImageDelivery',
-  ]);
+  const pvwClient =
+        ParaViewWebClient.createClient(connection,
+                                       [
+                                         'MouseHandler',
+                                         'ViewPort',
+                                         'ViewPortImageDelivery',
+                                       ],
+                                       amsProtocols);
   const renderer = new RemoteRenderer(pvwClient);
   renderer.setContainer(divRenderer);
   renderer.onImageReady(() => {
@@ -52,4 +54,41 @@ smartConnect.onConnectionReady((connection) => {
   });
   SizeHelper.startListening();
 });
+
+const divTitle = document.createElement('div');
+document.body.appendChild(divTitle);
+divTitle.innerHTML = '<h1>Hello Amgen1234 World..!&nbsp;</h1>';
+
+document.body.style.padding = '50';
+document.body.style.margin = '50';
+
+const divRoot = document.createElement('div');
+divRoot.id = "root";
+document.body.appendChild(divRoot);
+
+class AMSControlPanel extends React.Component {
+  testbutton() {
+    Object.keys(smartConnect.getSession()).forEach((key) => {
+      console.log(">>>>>>",key);
+    });
+    smartConnect.getSession().call('amsprotocol.testbutton', []);
+    console.log("******* pressed *******");
+  };
+
+  render() {
+    return (<button onClick={() => this.testbutton()}>chcolor</button>);
+  }
+}
+
+const divRenderer = document.createElement('div');
+document.body.appendChild(divRenderer);
+
+divRenderer.style.position = 'relative';
+divRenderer.style.width = '100vw';
+divRenderer.style.height = '100vh';
+divRenderer.style.overflow = 'hidden';
+
+ReactDOM.render(<AMSControlPanel />,
+                document.getElementById('root'));
+
 smartConnect.connect();

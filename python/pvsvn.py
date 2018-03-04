@@ -11,13 +11,12 @@ from wslink import server
 from wslink import register as exportRPC
 from wslink.websocket import LinkProtocol
 
-class amsProtocol(LinkProtocol):
-    def __init__(self):
-        super(amsProtocol, self).__init__()
+class amsProtocol(pv_protocols.ParaViewWebProtocol):
 
     @exportRPC("amsprotocol.testbutton")
     def testbutton(self):
         print("******* HELP ********")
+        return "******** WELL HELLO THERE! *******"
 
 
 try:
@@ -31,14 +30,14 @@ except ImportError:
 # Create custom PVServerProtocol class to handle clients requests
 # =============================================================================
 
-class _DemoServer(pv_wslink.PVServerProtocol,amsProtocol):
+class _DemoServer(pv_wslink.PVServerProtocol):
     authKey = "wslink-secret"
     def initialize(self):
         # Bring used components
         self.registerVtkWebProtocol(pv_protocols.ParaViewWebMouseHandler())
         self.registerVtkWebProtocol(pv_protocols.ParaViewWebViewPort())
         self.registerVtkWebProtocol(pv_protocols.ParaViewWebViewPortImageDelivery())
-        #self.registerVtkWebProtocol(self.testbutton())
+        self.registerVtkWebProtocol(amsProtocol())
         self.updateSecret(_DemoServer.authKey)
 
         # Disable interactor-based render calls
