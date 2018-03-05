@@ -36,3 +36,4 @@
 node_modules
 ams102.js*
 public
+*.pyc
