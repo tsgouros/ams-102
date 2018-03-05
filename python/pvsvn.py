@@ -16,6 +16,7 @@ class amsProtocol(pv_protocols.ParaViewWebProtocol):
     @exportRPC("amsprotocol.testbutton")
     def testbutton(self):
         print("******* HELP ********")
+        _DemoServer.modifyImage()
         return "******** WELL HELLO THERE! *******"
 
 
@@ -30,9 +31,16 @@ except ImportError:
 # Create custom PVServerProtocol class to handle clients requests
 # =============================================================================
 
+toggle = True
+contour1Display = ''
+
 class _DemoServer(pv_wslink.PVServerProtocol):
+
+
     authKey = "wslink-secret"
+
     def initialize(self):
+
         # Bring used components
         self.registerVtkWebProtocol(pv_protocols.ParaViewWebMouseHandler())
         self.registerVtkWebProtocol(pv_protocols.ParaViewWebViewPort())
@@ -222,7 +230,38 @@ class _DemoServer(pv_wslink.PVServerProtocol):
         # Update interaction mode
         pxm = simple.servermanager.ProxyManager()
         interactionProxy = pxm.GetProxy('settings', 'RenderViewInteractionSettings')
+        print(dir(interactionProxy))
+
         interactionProxy.Camera3DManipulators = ['Rotate', 'Pan', 'Zoom', 'Pan', 'Roll', 'Pan', 'Zoom', 'Rotate', 'Zoom']
+
+
+        print("done with initialize()")
+
+    @staticmethod
+    def modifyImage():
+
+        if (toggle):
+            print("drawing.....")
+
+            # set scalar coloring
+            simple.ColorBy(contour1Display, ('POINTS', 'pressure'))
+
+            # rescale color and/or opacity maps used to include current data range
+            contour1Display.RescaleTransferFunctionToDataRange(True, False)
+
+
+        else:
+            print("changing back......")
+
+            # set scalar coloring
+            simple.ColorBy(contour1Display, ('POINTS', 'velocity_magnitude'))
+
+            # rescale color and/or opacity maps used to include current data range
+            contour1Display.RescaleTransferFunctionToDataRange(True, False)
+
+        self.toggle = not self.toggle
+
+
 
 # =============================================================================
 # Main: Parse args and start server
