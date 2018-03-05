@@ -84,11 +84,18 @@ class AMSControlPanel extends React.Component {
     console.log("******* pressed pressure *******");
   };
 
+  showTankGeometry() {
+    smartConnect.getSession().call('amsprotocol.show.tank.geometry', [])
+      .then((result) => console.log('result' + result));
+    console.log("******* pressed tankgeometry *******");
+  };
+
   render() {
     return (<center>
             <button onClick={() => this.testbutton()}>chcolor</button>
             <button onClick={() => this.showVelocity()}>velocity</button>
             <button onClick={() => this.showPressure()}>pressure</button>
+            <button onClick={() => this.showTankGeometry()}>tank</button>
             </center>
            );
   }

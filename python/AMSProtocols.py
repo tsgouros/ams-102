@@ -128,6 +128,7 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         self.profile = profile
 
         self.toggle = True
+        self.tankGeometryShown = False
 
     def addListener(self, dataChangedInstance):
         self.dataListeners.append(dataChangedInstance)
@@ -367,9 +368,70 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         return "******** executed testbutton *******"
 
 
+    @exportRPC("amsprotocol.show.tank.geometry")
+    def showTankGeometry(self):
 
+        if self.tankGeometryShown:
 
+            self.contour2Display = simple.Hide(self.contour2, self.renderView1)
+            self.tankGeometryShown = False
 
+        else:
+
+            # create a new 'Contour'
+            self.contour2 = simple.Contour(Input=self.matvizmofTFF90L91lpm100rpmcase)
+            self.contour2.PointMergeMethod = 'Uniform Binning'
+
+            # Properties modified on self.contour2
+            self.contour2.ContourBy = ['POINTS', 'wall_shear']
+            self.contour2.Isosurfaces = [0.0005]
+
+            # show data in view
+            self.contour2Display = simple.Show(self.contour2, self.renderView1)
+
+            # trace defaults for the display properties.
+            self.contour2Display.Representation = 'Surface'
+            self.contour2Display.ColorArrayName = [None, '']
+            self.contour2Display.OSPRayScaleFunction = 'PiecewiseFunction'
+            self.contour2Display.SelectOrientationVectors = 'None'
+            self.contour2Display.ScaleFactor = -2.0000000000000002e+298
+            self.contour2Display.SelectScaleArray = 'None'
+            self.contour2Display.GlyphType = 'Arrow'
+            self.contour2Display.GlyphTableIndexArray = 'None'
+            self.contour2Display.GaussianRadius = -1.0000000000000001e+298
+            self.contour2Display.SetScaleArray = [None, '']
+            self.contour2Display.ScaleTransferFunction = 'PiecewiseFunction'
+            self.contour2Display.OpacityArray = [None, '']
+            self.contour2Display.OpacityTransferFunction = 'PiecewiseFunction'
+            self.contour2Display.DataAxesGrid = 'GridAxesRepresentation'
+            self.contour2Display.SelectionCellLabelFontFile = ''
+            self.contour2Display.SelectionPointLabelFontFile = ''
+            self.contour2Display.PolarAxes = 'PolarAxesRepresentation'
+
+            # init the 'GridAxesRepresentation' selected for 'DataAxesGrid'
+            self.contour2Display.DataAxesGrid.XTitleFontFile = ''
+            self.contour2Display.DataAxesGrid.YTitleFontFile = ''
+            self.contour2Display.DataAxesGrid.ZTitleFontFile = ''
+            self.contour2Display.DataAxesGrid.XLabelFontFile = ''
+            self.contour2Display.DataAxesGrid.YLabelFontFile = ''
+            self.contour2Display.DataAxesGrid.ZLabelFontFile = ''
+
+            # init the 'PolarAxesRepresentation' selected for 'PolarAxes'
+            self.contour2Display.PolarAxes.PolarAxisTitleFontFile = ''
+            self.contour2Display.PolarAxes.PolarAxisLabelFontFile = ''
+            self.contour2Display.PolarAxes.LastRadialAxisTextFontFile = ''
+            self.contour2Display.PolarAxes.SecondaryRadialAxesTextFontFile = ''
+
+            # Properties modified on contour2Display
+            self.contour2Display.Opacity = 0.2
+
+            # change solid color
+            self.contour2Display.DiffuseColor = [0.0, 0.66, 0.5]
+
+            # update the view to ensure updated data information
+            self.renderView1.Update()
+
+            self.tankGeometryShown = True
 
 
 
