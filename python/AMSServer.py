@@ -178,10 +178,8 @@ class AMSServer(pv_wslink.PVServerProtocol):
         simple.GetRenderView().Background = [0,0,0]
         simple.GetRenderView().Background2 = [0,0,0]
 
-        amstest.drawThing()
-
-
-
+        amstest.draw100rpm()
+        amstest.takeStandardView()
 
          # Update interaction mode
         pxm = simple.servermanager.ProxyManager()

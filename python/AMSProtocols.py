@@ -136,8 +136,18 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
     def getInput(self):
         return self.dataset
 
+    @exportRPC("amsprotocol.draw.low.rpm")
+    def draw100rpm(self):
+        self.drawThing('/Users/tomfool/tech/18/amgen/ams-102-AgileViz/EnSight/mat-viz-mofTFF-90L-9.1lpm-100rpm/mat-viz-mofTFF-90L-9.1lpm-100rpm.case')
+        return "**** executed draw100rpm() ****"
 
-    def drawThing(self):
+    @exportRPC("amsprotocol.draw.high.rpm")
+    def draw250rpm(self):
+        self.drawThing('/Users/tomfool/tech/18/amgen/ams-102-AgileViz/EnSight/mat-viz-mofTFF-90L-9.1lpm-250rpm/mat-viz-mofTFF-90L-9.1lpm-250rpm.case')
+        return "**** executed draw250rpm() ****"
+
+
+    def drawThing(self, file):
 
         ##################################################
         #cone = simple.Cone()
@@ -149,16 +159,13 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         #paraview.simple._DisableFirstRenderCameraReset()
 
         # create a new 'EnSight Reader'
-        self.matvizmofTFF90L91lpm100rpmcase = simple.EnSightReader(CaseFileName='/Users/tomfool/tech/18/amgen/ams-102-AgileViz/EnSight/mat-viz-mofTFF-90L-9.1lpm-100rpm/mat-viz-mofTFF-90L-9.1lpm-100rpm.case')
-        self.matvizmofTFF90L91lpm100rpmcase.PointArrays = ['pressure', 'pressure_coefficient', 'dynamic_pressure', 'absolute_pressure', 'total_pressure', 'rel_total_pressure', 'density', 'density_all', 'velocity_magnitude', 'x_velocity', 'y_velocity', 'z_velocity', 'axial_velocity', 'radial_velocity', 'tangential_velocity', 'rel_velocity_magnitude', 'relative_x_velocity', 'relative_y_velocity', 'relative_z_velocity', 'rel_tangential_velocity', 'mesh_x_velocity', 'mesh_y_velocity', 'mesh_z_velocity', 'velocity_angle', 'relative_velocity_angle', 'vorticity_mag', 'helicity', 'x_vorticity', 'y_vorticity', 'z_vorticity', 'cell_reynolds_number', 'turb_kinetic_energy', 'turb_intensity', 'turb_diss_rate', 'production_of_k', 'viscosity_turb', 'viscosity_eff', 'viscosity_ratio', 'y_star', 'y_plus', 'uds_0_scalar', 'uds_0_diff_scalar', 'viscosity_lam', 'wall_shear', 'x_wall_shear', 'y_wall_shear', 'z_wall_shear', 'skin_friction_coef', 'cell_partition_active', 'cell_partition_stored', 'cell_id', 'cell_element_type', 'cell_type', 'cell_zone', 'partition_neighbors', 'cell_weight', 'x_coordinate', 'y_coordinate', 'z_coordinate', 'axial_coordinate', 'angular_coordinate', 'abs_angular_coordinate', 'radial_coordinate', 'face_area_magnitude', 'x_face_area', 'y_face_area', 'z_face_area', 'cell_volume', 'orthogonal_quality', 'cell_equiangle_skew', 'cell_equivolume_skew', 'face_handedness', 'mark_poor_elememts', 'interface_overlap_fraction', 'cell_wall_distance', 'adaption_function', 'adaption_curvature', 'adaption_space_gradient', 'adaption_iso_value', 'boundary_cell_dist', 'boundary_normal_dist', 'cell_volume_change', 'cell_surface_area', 'cell_warp', 'cell_children', 'cell_refine_level', 'mass_imbalance', 'strain_rate_mag', 'dx_velocity_dx', 'dy_velocity_dx', 'dz_velocity_dx', 'dx_velocity_dy', 'dy_velocity_dy', 'dz_velocity_dy', 'dx_velocity_dz', 'dy_velocity_dz', 'dz_velocity_dz', 'dp_dx', 'dp_dy', 'dp_dz', 'velocity']
+        self.dataFile = simple.EnSightReader(CaseFileName=file)
+        self.dataFile.PointArrays = ['pressure', 'pressure_coefficient', 'dynamic_pressure', 'absolute_pressure', 'total_pressure', 'rel_total_pressure', 'density', 'density_all', 'velocity_magnitude', 'x_velocity', 'y_velocity', 'z_velocity', 'axial_velocity', 'radial_velocity', 'tangential_velocity', 'rel_velocity_magnitude', 'relative_x_velocity', 'relative_y_velocity', 'relative_z_velocity', 'rel_tangential_velocity', 'mesh_x_velocity', 'mesh_y_velocity', 'mesh_z_velocity', 'velocity_angle', 'relative_velocity_angle', 'vorticity_mag', 'helicity', 'x_vorticity', 'y_vorticity', 'z_vorticity', 'cell_reynolds_number', 'turb_kinetic_energy', 'turb_intensity', 'turb_diss_rate', 'production_of_k', 'viscosity_turb', 'viscosity_eff', 'viscosity_ratio', 'y_star', 'y_plus', 'uds_0_scalar', 'uds_0_diff_scalar', 'viscosity_lam', 'wall_shear', 'x_wall_shear', 'y_wall_shear', 'z_wall_shear', 'skin_friction_coef', 'cell_partition_active', 'cell_partition_stored', 'cell_id', 'cell_element_type', 'cell_type', 'cell_zone', 'partition_neighbors', 'cell_weight', 'x_coordinate', 'y_coordinate', 'z_coordinate', 'axial_coordinate', 'angular_coordinate', 'abs_angular_coordinate', 'radial_coordinate', 'face_area_magnitude', 'x_face_area', 'y_face_area', 'z_face_area', 'cell_volume', 'orthogonal_quality', 'cell_equiangle_skew', 'cell_equivolume_skew', 'face_handedness', 'mark_poor_elememts', 'interface_overlap_fraction', 'cell_wall_distance', 'adaption_function', 'adaption_curvature', 'adaption_space_gradient', 'adaption_iso_value', 'boundary_cell_dist', 'boundary_normal_dist', 'cell_volume_change', 'cell_surface_area', 'cell_warp', 'cell_children', 'cell_refine_level', 'mass_imbalance', 'strain_rate_mag', 'dx_velocity_dx', 'dy_velocity_dx', 'dz_velocity_dx', 'dx_velocity_dy', 'dy_velocity_dy', 'dz_velocity_dy', 'dx_velocity_dz', 'dy_velocity_dz', 'dz_velocity_dz', 'dp_dx', 'dp_dy', 'dp_dz', 'velocity']
 
         # get active view
         self.renderView1 = simple.GetActiveViewOrCreate('RenderView')
         # uncomment following to set a specific view size
         # renderView1.ViewSize = [1638, 1076]
-
-        # show data in view
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay = simple.Show(self.matvizmofTFF90L91lpm100rpmcase, self.renderView1)
 
         # get color transfer function/color map for 'pressure'
         pressureLUT = simple.GetColorTransferFunction('pressure')
@@ -166,63 +173,8 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         # get opacity transfer function/opacity map for 'pressure'
         pressurePWF = simple.GetOpacityTransferFunction('pressure')
 
-        # trace defaults for the display properties.
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay.Representation = 'Surface'
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay.ColorArrayName = ['POINTS', 'pressure']
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay.LookupTable = pressureLUT
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay.OSPRayScaleArray = 'pressure'
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay.OSPRayScaleFunction = 'PiecewiseFunction'
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay.SelectOrientationVectors = 'velocity'
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay.ScaleFactor = 0.07445502169430256
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay.SelectScaleArray = 'pressure'
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay.GlyphType = 'Arrow'
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay.GlyphTableIndexArray = 'pressure'
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay.GaussianRadius = 0.03722751084715128
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay.SetScaleArray = ['POINTS', 'pressure']
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay.ScaleTransferFunction = 'PiecewiseFunction'
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay.OpacityArray = ['POINTS', 'pressure']
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay.OpacityTransferFunction = 'PiecewiseFunction'
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay.DataAxesGrid = 'GridAxesRepresentation'
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay.SelectionCellLabelFontFile = ''
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay.SelectionPointLabelFontFile = ''
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay.PolarAxes = 'PolarAxesRepresentation'
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay.ScalarOpacityFunction = pressurePWF
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay.ScalarOpacityUnitDistance = 0.007476863260594431
-
-        # init the 'PiecewiseFunction' selected for 'ScaleTransferFunction'
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay.ScaleTransferFunction.Points = [-152.6022491455078, 0.0, 0.5, 0.0, 144.73870849609375, 1.0, 0.5, 0.0]
-
-        # init the 'PiecewiseFunction' selected for 'OpacityTransferFunction'
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay.OpacityTransferFunction.Points = [-152.6022491455078, 0.0, 0.5, 0.0, 144.73870849609375, 1.0, 0.5, 0.0]
-
-        # init the 'GridAxesRepresentation' selected for 'DataAxesGrid'
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay.DataAxesGrid.XTitleFontFile = ''
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay.DataAxesGrid.YTitleFontFile = ''
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay.DataAxesGrid.ZTitleFontFile = ''
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay.DataAxesGrid.XLabelFontFile = ''
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay.DataAxesGrid.YLabelFontFile = ''
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay.DataAxesGrid.ZLabelFontFile = ''
-
-        # init the 'PolarAxesRepresentation' selected for 'PolarAxes'
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay.PolarAxes.PolarAxisTitleFontFile = ''
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay.PolarAxes.PolarAxisLabelFontFile = ''
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay.PolarAxes.LastRadialAxisTextFontFile = ''
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay.PolarAxes.SecondaryRadialAxesTextFontFile = ''
-
-        # reset view to fit data
-        self.renderView1.ResetCamera()
-
-        # show color bar/color legend
-        self.matvizmofTFF90L91lpm100rpmcaseDisplay.SetScalarBarVisibility(self.renderView1, True)
-
-        # update the view to ensure updated data information
-        self.renderView1.Update()
-
-        # hide data in view
-        simple.Hide(self.matvizmofTFF90L91lpm100rpmcase, self.renderView1)
-
         # create a new 'Contour'
-        self.contour1 = simple.Contour(Input=self.matvizmofTFF90L91lpm100rpmcase)
+        self.contour1 = simple.Contour(Input=self.dataFile)
         self.contour1.ContourBy = ['POINTS', 'pressure']
         self.contour1.Isosurfaces = [-3.9317703247070312]
         self.contour1.PointMergeMethod = 'Uniform Binning'
@@ -279,7 +231,7 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         self.renderView1.ResetCamera()
 
         # hide data in view
-        simple.Hide(self.matvizmofTFF90L91lpm100rpmcase, self.renderView1)
+        simple.Hide(self.dataFile, self.renderView1)
 
         # show color bar/color legend
         self.contour1Display.SetScalarBarVisibility(self.renderView1, True)
@@ -298,8 +250,9 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
 
         # get color transfer function/color map for 'velocity_magnitude'
         velocity_magnitudeLUT = simple.GetColorTransferFunction('velocity_magnitude')
-
         #### saving camera placements for all active views
+
+    def takeStandardView(self):
 
         # current camera placement for renderView1
         self.renderView1.CameraPosition = [1.3051878628081257, -1.32358496378265, -0.017141331493847792]
@@ -379,7 +332,7 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         else:
 
             # create a new 'Contour'
-            self.contour2 = simple.Contour(Input=self.matvizmofTFF90L91lpm100rpmcase)
+            self.contour2 = simple.Contour(Input=self.dataFile)
             self.contour2.PointMergeMethod = 'Uniform Binning'
 
             # Properties modified on self.contour2

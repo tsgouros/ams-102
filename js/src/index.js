@@ -32,6 +32,18 @@ const amsProtocols = {
         console.log("******* pressed test *******");
       },
 
+      drawLowRPM: () => {
+        session.call('amsprotocol.draw.low.rpm', [])
+          .then((result) => console.log('result: ' + result));
+        console.log("******* pressed low rpm *******");
+      },
+
+      drawHighRPM: () => {
+        session.call('amsprotocol.draw.high.rpm', [])
+          .then((result) => console.log('result: ' + result));
+        console.log("******* pressed high rpm *******");
+      },
+
       showVelocity: () => {
         session.call('amsprotocol.show.velocity', [])
           .then((result) => console.log('result' + result));
@@ -90,6 +102,8 @@ class AMSControlPanel extends React.Component {
     return (
         <center>
         <button onClick={() => model.pvwClient.testButtonService.testbutton()}>chcolor</button>
+        <button onClick={() => model.pvwClient.testButtonService.drawLowRPM()}>low rpm</button>
+        <button onClick={() => model.pvwClient.testButtonService.drawHighRPM()}>high rpm</button>
         <button onClick={() => model.pvwClient.testButtonService.showVelocity()}>velocity</button>
         <button onClick={() => model.pvwClient.testButtonService.showPressure()}>pressure</button>
         <button onClick={() => model.pvwClient.testButtonService.showTankGeometry()}>tank</button>
