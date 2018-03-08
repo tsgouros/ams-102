@@ -362,10 +362,10 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         return "**** executed showPressure() ****"
 
     @exportRPC("amsprotocol.testbutton")
-    def testbutton(self):
+    def testbutton(self, arg):
         print("toggling.")
         self.modifyImage()
-        return "******** executed testbutton *******"
+        return "******** executed testbutton with: " + arg + " *******"
 
 
     @exportRPC("amsprotocol.show.tank.geometry")
@@ -384,7 +384,7 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
 
             # Properties modified on self.contour2
             self.contour2.ContourBy = ['POINTS', 'wall_shear']
-            self.contour2.Isosurfaces = [0.0005]
+            self.contour2.Isosurfaces = [0.0002]
 
             # show data in view
             self.contour2Display = simple.Show(self.contour2, self.renderView1)
@@ -423,10 +423,10 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
             self.contour2Display.PolarAxes.SecondaryRadialAxesTextFontFile = ''
 
             # Properties modified on contour2Display
-            self.contour2Display.Opacity = 0.2
+            self.contour2Display.Opacity = 0.1
 
             # change solid color
-            self.contour2Display.DiffuseColor = [0.0, 0.66, 0.5]
+            self.contour2Display.DiffuseColor = [0.0, 0.5, 0.5]
 
             # update the view to ensure updated data information
             self.renderView1.Update()

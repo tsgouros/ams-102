@@ -21,28 +21,48 @@ import SmartConnect from 'wslink/src/SmartConnect';
 const config = { sessionURL: 'ws://localhost:1234/ws' };
 const smartConnect = SmartConnect.newInstance({ config });
 
+var model = {};
+
 const amsProtocols = {
-  testbuttonService: (session) => {
+  testButtonService: (session) => {
     return {
       testbutton: () => {
-        console.log("hi there ******************");
-        session.call('amsprotocol.testbutton',[])
-          .then((result) => log('result: ' + result));
+        session.call('amsprotocol.testbutton', [ "123" ])
+          .then((result) => console.log('result: ' + result));
+        console.log("******* pressed test *******");
+      },
+
+      showVelocity: () => {
+        session.call('amsprotocol.show.velocity', [])
+          .then((result) => console.log('result' + result));
+        console.log("******* pressed velocity *******");
+      },
+
+      showPressure: () => {
+        session.call('amsprotocol.show.pressure', [])
+          .then((result) => console.log('result' + result));
+        console.log("******* pressed pressure *******");
+      },
+
+      showTankGeometry: () => {
+        session.call('amsprotocol.show.tank.geometry', [])
+          .then((result) => console.log('result' + result));
+        console.log("******* pressed tankgeometry *******");
       },
     };
   },
 };
 
 smartConnect.onConnectionReady((connection) => {
-  const pvwClient =
-        ParaViewWebClient.createClient(connection,
-                                       [
-                                         'MouseHandler',
-                                         'ViewPort',
-                                         'ViewPortImageDelivery',
-                                       ],);
-                                       //amsProtocols);
-  const renderer = new RemoteRenderer(pvwClient);
+  model.pvwClient =
+    ParaViewWebClient.createClient(connection,
+                                   [
+                                     'MouseHandler',
+                                     'ViewPort',
+                                     'ViewPortImageDelivery',
+                                   ],
+                                   amsProtocols);
+  const renderer = new RemoteRenderer(model.pvwClient);
   renderer.setContainer(divRenderer);
   renderer.onImageReady(() => {
     console.log('image ready (for next command)');
@@ -66,38 +86,15 @@ divRoot.id = "root";
 document.body.appendChild(divRoot);
 
 class AMSControlPanel extends React.Component {
-  testbutton() {
-    smartConnect.getSession().call('amsprotocol.testbutton', [])
-      .then((result) => console.log('result' + result));
-    console.log("******* pressed test *******");
-  };
-
-  showVelocity() {
-    smartConnect.getSession().call('amsprotocol.show.velocity', [])
-      .then((result) => console.log('result' + result));
-    console.log("******* pressed velocity *******");
-  };
-
-  showPressure() {
-    smartConnect.getSession().call('amsprotocol.show.pressure', [])
-      .then((result) => console.log('result' + result));
-    console.log("******* pressed pressure *******");
-  };
-
-  showTankGeometry() {
-    smartConnect.getSession().call('amsprotocol.show.tank.geometry', [])
-      .then((result) => console.log('result' + result));
-    console.log("******* pressed tankgeometry *******");
-  };
-
   render() {
-    return (<center>
-            <button onClick={() => this.testbutton()}>chcolor</button>
-            <button onClick={() => this.showVelocity()}>velocity</button>
-            <button onClick={() => this.showPressure()}>pressure</button>
-            <button onClick={() => this.showTankGeometry()}>tank</button>
-            </center>
-           );
+    return (
+        <center>
+        <button onClick={() => model.pvwClient.testButtonService.testbutton()}>chcolor</button>
+        <button onClick={() => model.pvwClient.testButtonService.showVelocity()}>velocity</button>
+        <button onClick={() => model.pvwClient.testButtonService.showPressure()}>pressure</button>
+        <button onClick={() => model.pvwClient.testButtonService.showTankGeometry()}>tank</button>
+        </center>
+    );
   }
 }
 
@@ -109,10 +106,11 @@ divRenderer.style.width = '100vw';
 divRenderer.style.height = '100vh';
 divRenderer.style.overflow = 'hidden';
 
+smartConnect.connect();
+
 ReactDOM.render(<AMSControlPanel />,
                 document.getElementById('root'));
 
-smartConnect.connect();
 
 // The array list should only contain the names that belong to that directory:
 // https://github.com/Kitware/paraviewweb/tree/master/src/IO/WebSocket/ParaViewWebClient
@@ -134,5 +132,13 @@ smartConnect.connect();
 // You can find a live example of its usage here:
 // https://github.com/Kitware/divvy/blob/master/Sources/client.js#L27-L65
 
-//                                                HTH,
-
+// TODO:
+//
+// - The method of invoking the protocols is not ideal, so let's try
+//   the above.
+//
+// - Can we put a second render window in place?
+//
+// - Can we control the rotation and view?
+//
+//
