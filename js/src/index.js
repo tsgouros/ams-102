@@ -88,7 +88,7 @@ smartConnect.onConnectionReady((connection) => {
 
 const divTitle = document.createElement('div');
 document.body.appendChild(divTitle);
-divTitle.innerHTML = '<h1>Hello Amgen1234 World..!&nbsp;</h1>';
+divTitle.innerHTML = '<h1>&nbsp;&nbsp;&nbsp;Hello Amgen World!</h1>';
 
 document.body.style.padding = '50';
 document.body.style.margin = '50';
@@ -101,7 +101,7 @@ class AMSControlPanel extends React.Component {
   render() {
     return (
         <center>
-        <button onClick={() => model.pvwClient.testButtonService.testbutton()}>chcolor</button>
+        <button onClick={() => model.pvwClient.testButtonService.testbutton()}>test</button>
         <button onClick={() => model.pvwClient.testButtonService.drawLowRPM()}>low rpm</button>
         <button onClick={() => model.pvwClient.testButtonService.drawHighRPM()}>high rpm</button>
         <button onClick={() => model.pvwClient.testButtonService.showVelocity()}>velocity</button>
