@@ -7,6 +7,8 @@ import Spacer from 'paraviewweb/src/Component/Native/Spacer';
 import Composite from 'paraviewweb/src/Component/Native/Composite';
 import ReactAdapter from 'paraviewweb/src/Component/React/ReactAdapter';
 import WorkbenchController from 'paraviewweb/src/Component/React/WorkbenchController';
+import NumberSliderWidget from 'paraviewweb/src/React/Widgets/NumberSliderWidget';
+
 import { debounce } from 'paraviewweb/src/Common/Misc/Debounce';
 
 import RemoteRenderer from 'paraviewweb/src/NativeUI/Canvas/RemoteRenderer';
@@ -24,14 +26,8 @@ const smartConnect = SmartConnect.newInstance({ config });
 var model = {};
 
 const amsProtocols = {
-  testButtonService: (session) => {
+  amsService: (session) => {
     return {
-      testbutton: () => {
-        session.call('amsprotocol.testbutton', [ "123" ])
-          .then((result) => console.log('result: ' + result));
-        console.log("******* pressed test *******");
-      },
-
       drawLowRPM: () => {
         session.call('amsprotocol.draw.low.rpm', [])
           .then((result) => console.log('result: ' + result));
@@ -61,6 +57,13 @@ const amsProtocols = {
           .then((result) => console.log('result' + result));
         console.log("******* pressed tankgeometry *******");
       },
+
+      changeSurface: (surfaceValue) => {
+        session.call('amsprotocol.change.surface', [ surfaceValue ])
+          .then((result) => console.log('result: ' + result));
+        console.log("******* adjusted number of sides ********");
+      },
+
     };
   },
 };
@@ -98,15 +101,47 @@ divRoot.id = "root";
 document.body.appendChild(divRoot);
 
 class AMSControlPanel extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {surfaceValue: 500};
+    this.updateVal = this.updateVal.bind(this);
+  }
+
+  updateVal(e) {
+    // What changes, and what value?
+    const which = e.target.name;
+    const newVal = e.target.value;
+    const toUpdate = {};
+    toUpdate[which] = newVal;
+
+    // Update the new value in the display.
+    this.setState(toUpdate);
+
+    console.log(typeof e.target.value);
+    // Communicate it to the server.
+    model.pvwClient.amsService.changeSurface(e.target.value);
+  }
+    
   render() {
+    const [surfaceValue] = [this.state.surfaceValue];
+    
     return (
         <center>
-        <button onClick={() => model.pvwClient.testButtonService.testbutton()}>test</button>
-        <button onClick={() => model.pvwClient.testButtonService.drawLowRPM()}>low rpm</button>
-        <button onClick={() => model.pvwClient.testButtonService.drawHighRPM()}>high rpm</button>
-        <button onClick={() => model.pvwClient.testButtonService.showVelocity()}>velocity</button>
-        <button onClick={() => model.pvwClient.testButtonService.showPressure()}>pressure</button>
-        <button onClick={() => model.pvwClient.testButtonService.showTankGeometry()}>tank</button>
+        <div style={{width: '100%', display: 'table'}}>
+        <div style={{display: 'table-cell'}}>
+        
+        <button onClick={() => model.pvwClient.amsService.drawLowRPM()}>low rpm</button>
+        <button onClick={() => model.pvwClient.amsService.drawHighRPM()}>high rpm</button>
+        <button onClick={() => model.pvwClient.amsService.showVelocity()}>velocity</button>
+        <button onClick={() => model.pvwClient.amsService.showPressure()}>pressure</button>
+        <button onClick={() => model.pvwClient.amsService.showTankGeometry()}>tank</button>
+        </div>
+        <div style={{display: 'table-cell'}}>
+        <NumberSliderWidget value={surfaceValue}
+            max="1000" min="10" onChange={this.updateVal} name="surfaceValue"/>
+        </div>
+        </div>
+
         </center>
     );
   }

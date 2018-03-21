@@ -1,5 +1,6 @@
 import os, sys, logging, types, inspect, traceback, logging, re, json, base64
-from time import time
+import time
+import threading
 
 # import RPC annotation
 from wslink import register as exportRPC
@@ -138,7 +139,7 @@ class AMSDataObject(object):
 
         # Properties modified on contour1
         self.contour1.ContourBy = ['POINTS', 'uds_0_scalar']
-        self.contour1.Isosurfaces = [480.0, 570.0]
+        self.contour1.Isosurfaces = [480.0]
 
         # show data in view
         self.contour1Display = simple.Show(self.contour1, self.renderView)
@@ -320,12 +321,19 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         self.data0on = True
         self.data1on = False
 
+        # A time stamp to keep from overloading the server.
+        self.lastTime = 0  
 
         # get active view
         self.renderView1 = simple.GetActiveViewOrCreate('RenderView')
         # uncomment following to set a specific view size
         # renderView1.ViewSize = [1638, 1076]
 
+        self.surfaceThread = threading.Thread(target=self.doNothing)
+
+    def doNothing(self):
+        print("ready")
+        
     def initializeData(self):
 
         self.addObject(AMSDataObject('/Users/tomfool/tech/18/amgen/ams-102-AgileViz/EnSight/mat-viz-mofTFF-90L-9.1lpm-100rpm/mat-viz-mofTFF-90L-9.1lpm-100rpm.case', self.renderView1))
@@ -377,30 +385,31 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         ##################################################
 
 
-    def modifyImage(self):
+    # def modifyImage(self):
 
-        if (self.toggle):
-            print("drawing pressure.....")
+    #     if (self.toggle):
+    #         print("drawing pressure.....")
 
-            # set scalar coloring
-            simple.ColorBy(self.contour1Display, ('POINTS', 'pressure'))
+    #         for obj in self.dataObjects:
+            
+    #             # set scalar coloring
+    #             simple.ColorBy(obj.contour1Display, ('POINTS', 'pressure'))
 
-            # rescale color and/or opacity maps used to include current data range
-            self.contour1Display.RescaleTransferFunctionToDataRange(True, False)
-            self.renderView1.Update()
+    #             obj.contour1Display.RescaleTransferFunctionToDataRange(True, False)
+    #             obj.renderView1.Update()
 
 
-        else:
-            print("changing back......")
+    #     else:
+    #         print("changing back......")
 
-            # set scalar coloring
-            simple.ColorBy(self.contour1Display, ('POINTS', 'velocity_magnitude'))
+    #         # set scalar coloring
+    #         simple.ColorBy(self.contour1Display, ('POINTS', 'velocity_magnitude'))
 
-            # rescale color and/or opacity maps used to include current data range
-            self.contour1Display.RescaleTransferFunctionToDataRange(True, False)
-            self.renderView1.Update()
+    #         # rescale color and/or opacity maps used to include current data range
+    #         self.contour1Display.RescaleTransferFunctionToDataRange(True, False)
+    #         self.renderView1.Update()
 
-        self.toggle = not self.toggle
+    #     self.toggle = not self.toggle
 
 
     @exportRPC("amsprotocol.show.velocity")
@@ -420,13 +429,6 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         self.dataObjects[1].showPressure()
         return "**** executed showPressure() ****"
 
-    @exportRPC("amsprotocol.testbutton")
-    def testbutton(self, arg):
-        print("toggling.")
-        self.modifyImage()
-        return "******** executed testbutton with: " + arg + " *******"
-
-
     @exportRPC("amsprotocol.show.tank.geometry")
     def showTankGeometry(self):
 
@@ -434,4 +436,31 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         self.renderView1.Update()
 
 
+    def updateSurface(self):
 
+        while time.time() - self.lastTime < 0.5:
+            time.sleep(0.1)
+
+        print("**** changing to ", self.targetVal)
+        for obj in self.dataObjects:
+            
+            obj.contour1.Isosurfaces = [self.targetVal]
+            self.renderView1.Update()
+
+        
+
+    @exportRPC("amsprotocol.change.surface")
+    def changeSurface(self, arg):
+
+        if self.surfaceThread.isAlive():
+            self.lastTime = time.time()
+            self.targetVal = float(arg)
+            print("updating data for thread: " + arg)
+        else:
+            self.lastTime = time.time()
+            print("starting thread..." + arg, self.lastTime)
+            self.surfaceThread = threading.Thread(target=self.updateSurface)
+            self.surfaceThread.start()
+        
+        
+        return "******** executed testbutton with: " + arg + " *******"
