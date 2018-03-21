@@ -1,17 +1,45 @@
-\documentclass[11pt]{tsmemo}
+\documentclass[11pt]{article}
+\usepackage{mathptmx}
+\usepackage[tmargin=1.25in,bmargin=1.25in,hmargin=1.3in]{geometry}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
+\usepackage{xspace}
+\usepackage[hyphens]{url}
 \usepackage{wrapfig}
+% \usepackage{hyperref}
+
+\newcommand{\doctitle}{Documentation of technology decisions for AMS-102}
+\newcommand{\docauthor}{Tom Sgouros Brown/CCV}
+\newcommand{\docdate}{March 5, 2018}
+
+\pagestyle{fancy}
+\lhead{\itshape\doctitle}%
+%\chead{\raisebox{\baselineskip}{\@memohead}}
+\rhead{\itshape\docdate}
+\lfoot{\itshape\docauthor}
+\cfoot{}
+\rfoot{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
 
 \begin{document}
-\toaddress{Pablo Rolandi and Amgen tech team}
-\fromaddress{Tom Sgouros, Brown/CCV}
-\subject{Documentation of technology decisions for AMS-102}
-
-\begin{memo}
+\title{\doctitle}\author{\docauthor}\date{\docdate}
+\maketitle
 
 The goal is to make a visualization pipeline for hydrodynamic model data
 that is easy to use on a portable device like a tablet.  The idea is
 to make the visualizations available on the shop floor to
 users relatively unsophisticated in graphics and visualization.
+
+\begin{center}\setlength{\fboxsep}{10pt}\framebox{%
+\begin{minipage}{0.6\columnwidth}
+\tableofcontents
+\end{minipage}}
+\end{center}
+
+
+\section{Technology choices}
 
 Paraview supports a wide range of visualizations and supports use in a
 distributed environment, as well as supporting parallel processing for
@@ -95,8 +123,8 @@ go.  Time runs down in the image, so the process begins with the user
 request (RQ) for a model run in the top left.  The shaded boxes
 represent the parts of the system that Brown/CCV is responsible for.
 
-\vspace{-0.45in}\hspace{-.5in}
-\includegraphics[width=1.2\columnwidth]{web/agile_visualizations_sequence.pdf}
+\hspace{-.5in}
+\includegraphics[width=1.2\columnwidth]{images/agile_visualizations_sequence.pdf}
 
 \vspace{-0.4in}
 
@@ -124,11 +152,11 @@ the visualization parameters, until the desired result is achieved.
 Only the first RQ for a Paraview model will result in a request for
 model data from the :Run module.
 
-
+\newpage
 
 
 \begin{wrapfigure}{l}{0.51\columnwidth}
-\includegraphics[width=0.5\columnwidth]{web/mockup.pdf}
+\includegraphics[width=0.5\columnwidth]{images/mockup.pdf}
 \end{wrapfigure}
 
 The other important interest in developing this application is to make
@@ -141,24 +169,40 @@ what was actually done to create the view on the screen.
 
 To the left is a crude mockup of a user interface meant to maximize
 the screen area used for viewing the model, and an indication of how
-the menu system will work.  The idea of the menu structure is to present the
-choices to be made across the bottom of the view, in such a way that
-when the menus are displayed, they will act as a visible record of the choices
-that were actually made to create the view.  The goal would be to make
-the choices not only easy to read, but easy to edit as well. The interface visibility will toggle with
-the small blue button to the left and the menus will ``unfold'' from
-that button.
+the menu system will work.  The idea of the menu structure is to
+present the choices to be made across the bottom of the view, in such
+a way that when the menus are displayed, they will act as a visible
+record of the choices that were actually made to create the view.  The
+goal would be to make the choices not only easy to read, but easy to
+edit as well. The interface visibility will toggle with the small blue
+button to the left and the menus will ``unfold'' from that button.
 
-We are currently evaluating a range of Javascript UI library
-frameworks to see which is best suited for the purpose.
-Bootstrap, Webix, and Blueprint are popular.  There is one called
-OpenUI 5 that might be worth examination; it is freeware, but
-supported by SAP.  If Amgen has an endorsed framework to use (perhaps
-it was used for the system to request a model run?) that
-would be useful to know at this point.
+The ParaviewWeb apparatus relies heavily on the React Javascript UI
+framework, so we will use that.  It seems to have tools enough that an
+additional UI framework will not be necessary.
+
+\section{How it works}
 
 
+The documentation for ParaviewWeb is not really adequate, so we
+describe the implementation of the server and client here.
 
-\end{memo}
+\framebox{%
+\includegraphics[width=0.8\columnwidth]{images/client-server-diagram.pdf}
+}
+
+\subsection{pvpython Server}
+
+\subsubsection{Process communication}
+
+\subsubsection{Protocols}
+
+
+\subsection{paraviewweb Client}
+
+\subsubsection{Protocol implementation}
+
+\subsubsection{React toolkit}
+
 
 \end{document}
