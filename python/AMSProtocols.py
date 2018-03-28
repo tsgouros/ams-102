@@ -360,6 +360,7 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
             self.dataObjects[0].show()
             self.data0on = True
 
+        self.getApplication().InvokeEvent('UpdateEvent')
         return "**** executed draw100rpm() ****"
 
     @exportRPC("amsprotocol.draw.high.rpm")
@@ -372,6 +373,7 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
             self.dataObjects[1].show()
             self.data1on = True
 
+        self.getApplication().InvokeEvent('UpdateEvent')    
         return "**** executed draw250rpm() ****"
 
 
@@ -418,6 +420,7 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
 
         self.dataObjects[0].showVelocity()
         self.dataObjects[1].showVelocity()
+        self.getApplication().InvokeEvent('UpdateEvent')
         return "**** executed showVelocity() ****"
 
 
@@ -427,6 +430,7 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
 
         self.dataObjects[0].showPressure()
         self.dataObjects[1].showPressure()
+        self.getApplication().InvokeEvent('UpdateEvent')
         return "**** executed showPressure() ****"
 
     @exportRPC("amsprotocol.show.tank.geometry")
@@ -434,7 +438,9 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
 
         self.dataObjects[0].toggleTankGeometry()
         self.renderView1.Update()
-
+        self.getApplication().InvokeEvent('UpdateEvent')
+        print("invoking update?")
+        
 
     def updateSurface(self):
 
@@ -446,6 +452,8 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
             
             obj.contour1.Isosurfaces = [self.targetVal]
             self.renderView1.Update()
+            self.getApplication().InvokeEvent('UpdateEvent')
+            print("change?")
 
         
 

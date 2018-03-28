@@ -157,8 +157,9 @@ class AMSServer(pv_wslink.PVServerProtocol):
         self.registerVtkWebProtocol(pv_protocols.ParaViewWebMouseHandler())
 #        self.registerVtkWebProtocol(pv_protocols.ParaViewWebTimeHandler())
         self.registerVtkWebProtocol(pv_protocols.ParaViewWebViewPort(AMSServer.viewportScale, AMSServer.viewportMaxWidth, AMSServer.viewportMaxHeight))
-#        self.registerVtkWebProtocol(pv_protocols.ParaViewWebPublishImageDelivery(decode=False))
-        self.registerVtkWebProtocol(pv_protocols.ParaViewWebViewPortImageDelivery())
+        self.registerVtkWebProtocol(pv_protocols.ParaViewWebPublishImageDelivery(decode=False))
+#        self.registerVtkWebProtocol(pv_protocols.ParaViewWebViewPortImageDelivery())
+#        self.registerVtkWebProtocol(pv_protocols.ParaViewPublishImageDelivery())
 
         amstest = AMSProtocols.AMSTest(AMSServer.config, AMSServer.profile)
 
@@ -171,7 +172,7 @@ class AMSServer(pv_wslink.PVServerProtocol):
         # tell the C++ web app to use no
         # encoding. ParaViewWebPublishImageDelivery must be set to
         # decode=False to match.
-#        self.getApplication().SetImageEncoding(0);
+        self.getApplication().SetImageEncoding(0);
 
         # Disable interactor-based render calls
         simple.GetRenderView().EnableRenderOnInteraction = 0

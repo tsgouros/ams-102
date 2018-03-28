@@ -11,7 +11,8 @@ import NumberSliderWidget from 'paraviewweb/src/React/Widgets/NumberSliderWidget
 
 import { debounce } from 'paraviewweb/src/Common/Misc/Debounce';
 
-import RemoteRenderer from 'paraviewweb/src/NativeUI/Canvas/RemoteRenderer';
+//import RemoteRenderer from 'paraviewweb/src/NativeUI/Canvas/RemoteRenderer';
+import VtkRenderer from 'paraviewweb/src/NativeUI/Renderers/VtkRenderer';
 import SizeHelper from 'paraviewweb/src/Common/Misc/SizeHelper';
 import ParaViewWebClient from 'paraviewweb/src/IO/WebSocket/ParaViewWebClient';
 
@@ -74,14 +75,14 @@ smartConnect.onConnectionReady((connection) => {
                                    [
                                      'MouseHandler',
                                      'ViewPort',
-                                     'ViewPortImageDelivery',
+                                     'VtkImageDelivery',
                                    ],
                                    amsProtocols);
-  const renderer = new RemoteRenderer(model.pvwClient);
+  const renderer = VtkRenderer.newInstance({ client: model.pvwClient });
   renderer.setContainer(divRenderer);
-  renderer.onImageReady(() => {
-    console.log('image ready (for next command)');
-  });
+  // renderer.onImageReady(() => {
+  //   console.log('image ready (for next command)');
+  // });
   window.renderer = renderer;
   SizeHelper.onSizeChange(() => {
     renderer.resize();
