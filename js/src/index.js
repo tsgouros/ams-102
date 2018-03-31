@@ -65,10 +65,14 @@ const amsProtocols = {
         console.log("******* adjusted number of sides ********");
       },
 
+      testButton: (testValue) => {
+        session.call('amsprotocol.test.button', [ testValue ])
+          .then((result) => console.log('result: ' + result));
+        console.log("******* testbutton ------>", testValue);
+      },
+
       heartbeatUpdate: () => {
         session.call('amsprotocol.heartbeat.update');
-          //.then((result) => console.log('result: ' + result));
-        //console.log("hearbeat request...");
       },
     };
   },
@@ -139,6 +143,7 @@ class AMSControlPanel extends React.Component {
         <div style={{width: '100%', display: 'table'}}>
         <div style={{display: 'table-cell'}}>
         
+        <button onClick={() => model.pvwClient.amsService.testButton(testVal)}>test</button>
         <button onClick={() => model.pvwClient.amsService.drawLowRPM()}>low rpm</button>
         <button onClick={() => model.pvwClient.amsService.drawHighRPM()}>high rpm</button>
         <button onClick={() => model.pvwClient.amsService.showVelocity()}>velocity</button>
@@ -165,6 +170,8 @@ divRenderer.style.height = '100vh';
 divRenderer.style.overflow = 'hidden';
 
 smartConnect.connect();
+
+var testVal = {hello: 52.6};
 
 function next() {
   ReactDOM.render(<AMSControlPanel />,
