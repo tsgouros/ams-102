@@ -65,14 +65,16 @@ const amsProtocols = {
         console.log("******* adjusted number of sides ********");
       },
 
-      hearbeatUpdate: () => {
-        session.call('amsprotocol.heartbeat.update')
-          .then((result) => console.log('result: ' + result));
-        console.log("hearbeat request...");
+      heartbeatUpdate: () => {
+        session.call('amsprotocol.heartbeat.update');
+          //.then((result) => console.log('result: ' + result));
+        //console.log("hearbeat request...");
       },
     };
   },
 };
+
+var connectionReady = false;
 
 smartConnect.onConnectionReady((connection) => {
   model.pvwClient =
@@ -93,6 +95,7 @@ smartConnect.onConnectionReady((connection) => {
     renderer.resize();
   });
   SizeHelper.startListening();
+  connectionReady = true;
 });
 
 const divTitle = document.createElement('div');
@@ -169,6 +172,12 @@ function next() {
 };
 
 setInterval(next, 5000);
+setInterval(function() {
+  if (connectionReady) {
+    model.pvwClient.amsService.heartbeatUpdate();
+  };
+},1000);
+
 next();
 
 // The array list should only contain the names that belong to that directory:

@@ -467,7 +467,6 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         """
         self.renderView1.Update()
         self.getApplication().InvokeEvent('UpdateEvent')
-        print("beating over here")
         return "heart is beating"
         
 
