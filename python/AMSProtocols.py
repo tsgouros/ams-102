@@ -347,15 +347,30 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
 
         self.surfaceThread = threading.Thread(target=self.doNothing)
 
+    def printDebug(self):
+        if self.debug:
+            # This retrieves the name of the calling function.
+            # 0:filename, 1:line number, 2:function, 3:calling string
+            functionName = traceback.extract_stack(None, 2)[0][2]
+            print("calling " + functionName + " for " + self.name)
+
     def doNothing(self):
         print("ready")
         
-    def initializeData(self):
+    def initializeData(self, dataFileNames):
+        """
+        Initialize data from a list of data files.  Show the first one, hide
+        the rest.
+        """
+        i = 0
+        for dataFile in dataFileNames:
+            self.addObject(AMSDataObject(dataFile, self.renderView1))
 
-        self.addObject(AMSDataObject('/Users/tomfool/tech/18/amgen/ams-102-AgileViz/EnSight/mat-viz-mofTFF-90L-9.1lpm-100rpm/mat-viz-mofTFF-90L-9.1lpm-100rpm.case', self.renderView1))
-        self.addObject(AMSDataObject('/Users/tomfool/tech/18/amgen/ams-102-AgileViz/EnSight/mat-viz-mofTFF-90L-9.1lpm-250rpm/mat-viz-mofTFF-90L-9.1lpm-250rpm.case', self.renderView1))
-        self.dataObjects[0].show()
-        self.dataObjects[1].hide()
+            if i == 0:
+                self.dataObjects[0].show()
+                i += 1
+            else:
+                self.dataObjects[1].hide()
 
     def addListener(self, dataChangedInstance):
         self.dataListeners.append(dataChangedInstance)
@@ -477,4 +492,14 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         for obj in self.dataObjects:
             obj.contour1.Isosurfaces = [self.targetVal]
 
-        return "******** executed testbutton with: " + arg + " *******"
+        return "******** executed changeSurface with: " + arg + " *******"
+
+    @exportRPC("amsprotocol.test.button")
+    def testButton(self, arg):
+
+        print("calling testbutton with: ")
+        print(arg)
+
+        return "******** executed testButton with: " + str(arg) + " *******"
+
+    

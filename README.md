@@ -1,11 +1,12 @@
 # ams-102
 CCV work with AMS
 
-Try this:
+Edit the files.json file in the python directory to be some files you 
+want to look at, and try this:
 
 ```
 $ cd python
-$ pvpython AMSServer.py -i localhost -p 1234
+$ pvpython AMSServer.py -i localhost -p 1234 --dataConfigFile files.json
 ```
 
 Over on the client, try this:

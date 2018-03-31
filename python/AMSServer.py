@@ -90,6 +90,7 @@ except ImportError:
 class AMSServer(pv_wslink.PVServerProtocol):
 
     dataDir = os.getcwd()
+    dataConfig = ""
     authKey = "wslink-secret"
     dsHost = None
     dsPort = 11111
@@ -126,10 +127,12 @@ class AMSServer(pv_wslink.PVServerProtocol):
 
     @staticmethod
     def add_arguments(parser):
+        parser.add_argument("--dataConfigFile", default=None, help="Path to a data config file")  
+
         parser.add_argument("--virtual-env", default=None, help="Path to virtual environment to use")
-        parser.add_argument("--data", default=os.getcwd(), help="path to data directory to list", dest="data")
-        parser.add_argument("--config", help="path to lightviz.config file", dest="configFile")
-        parser.add_argument("--profile", default="default", help="name of lightviz profile to use", dest="profile")
+        parser.add_argument("--dataDir", default=os.getcwd(), help="path to data directory to list", dest="data")
+        parser.add_argument("--config", help="path to config file", dest="configFile")
+        parser.add_argument("--profile", default="default", help="name of profile to use", dest="profile")
         parser.add_argument("--viewport-scale", default=1.0, type=float, help="Viewport scaling factor", dest="viewportScale")
         parser.add_argument("--viewport-max-width", default=2560, type=int, help="Viewport maximum size in width", dest="viewportMaxWidth")
         parser.add_argument("--viewport-max-height", default=1440, type=int, help="Viewport maximum size in height", dest="viewportMaxHeight")
@@ -142,6 +145,11 @@ class AMSServer(pv_wslink.PVServerProtocol):
         if args.configFile and os.path.exists(args.configFile):
             with open(args.configFile) as fp:
                 AMSServer.config = json.load(fp)
+
+        if args.dataConfigFile and os.path.exists(args.dataConfigFile):
+            with open(args.dataConfigFile) as fp:
+                AMSServer.dataConfig = json.load(fp)
+
         AMSServer.profile = args.profile
         AMSServer.viewportScale     = args.viewportScale
         AMSServer.viewportMaxWidth  = args.viewportMaxWidth
@@ -179,7 +187,11 @@ class AMSServer(pv_wslink.PVServerProtocol):
         simple.GetRenderView().Background = [0,0,0]
         simple.GetRenderView().Background2 = [0,0,0]
 
-        amstest.initializeData()
+        if self.dataConfig:
+            amstest.initializeData( self.dataConfig["files"] )
+        else:
+            amstest.initializeData( ["/Users/tomfool/tech/18/amgen/ams-102-AgileViz/EnSight/mat-viz-mofTFF-90L-9.1lpm-100rpm/mat-viz-mofTFF-90L-9.1lpm-100rpm.case", "/Users/tomfool/tech/18/amgen/ams-102-AgileViz/EnSight/mat-viz-mofTFF-90L-9.1lpm-250rpm/mat-viz-mofTFF-90L-9.1lpm-250rpm.case" ])
+
         amstest.takeStandardView()
 
          # Update interaction mode
