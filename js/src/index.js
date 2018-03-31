@@ -65,6 +65,11 @@ const amsProtocols = {
         console.log("******* adjusted number of sides ********");
       },
 
+      hearbeatUpdate: () => {
+        session.call('amsprotocol.heartbeat.update')
+          .then((result) => console.log('result: ' + result));
+        console.log("hearbeat request...");
+      },
     };
   },
 };
@@ -158,9 +163,13 @@ divRenderer.style.overflow = 'hidden';
 
 smartConnect.connect();
 
-ReactDOM.render(<AMSControlPanel />,
-                document.getElementById('root'));
+function next() {
+  ReactDOM.render(<AMSControlPanel />,
+                  document.getElementById('root'));
+};
 
+setInterval(next, 5000);
+next();
 
 // The array list should only contain the names that belong to that directory:
 // https://github.com/Kitware/paraviewweb/tree/master/src/IO/WebSocket/ParaViewWebClient

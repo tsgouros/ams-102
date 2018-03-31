@@ -118,6 +118,7 @@ class AMSDataObject(object):
     def __init__(self, fileName, renderView):
 
         self.name = fileName
+        self.debug = True
         self.dataFile = simple.EnSightReader(CaseFileName=fileName)
         self.dataFile.PointArrays = ['pressure', 'pressure_coefficient', 'dynamic_pressure', 'absolute_pressure', 'total_pressure', 'rel_total_pressure', 'density', 'density_all', 'velocity_magnitude', 'x_velocity', 'y_velocity', 'z_velocity', 'axial_velocity', 'radial_velocity', 'tangential_velocity', 'rel_velocity_magnitude', 'relative_x_velocity', 'relative_y_velocity', 'relative_z_velocity', 'rel_tangential_velocity', 'mesh_x_velocity', 'mesh_y_velocity', 'mesh_z_velocity', 'velocity_angle', 'relative_velocity_angle', 'vorticity_mag', 'helicity', 'x_vorticity', 'y_vorticity', 'z_vorticity', 'cell_reynolds_number', 'turb_kinetic_energy', 'turb_intensity', 'turb_diss_rate', 'production_of_k', 'viscosity_turb', 'viscosity_eff', 'viscosity_ratio', 'y_star', 'y_plus', 'uds_0_scalar', 'uds_0_diff_scalar', 'viscosity_lam', 'wall_shear', 'x_wall_shear', 'y_wall_shear', 'z_wall_shear', 'skin_friction_coef', 'cell_partition_active', 'cell_partition_stored', 'cell_id', 'cell_element_type', 'cell_type', 'cell_zone', 'partition_neighbors', 'cell_weight', 'x_coordinate', 'y_coordinate', 'z_coordinate', 'axial_coordinate', 'angular_coordinate', 'abs_angular_coordinate', 'radial_coordinate', 'face_area_magnitude', 'x_face_area', 'y_face_area', 'z_face_area', 'cell_volume', 'orthogonal_quality', 'cell_equiangle_skew', 'cell_equivolume_skew', 'face_handedness', 'mark_poor_elememts', 'interface_overlap_fraction', 'cell_wall_distance', 'adaption_function', 'adaption_curvature', 'adaption_space_gradient', 'adaption_iso_value', 'boundary_cell_dist', 'boundary_normal_dist', 'cell_volume_change', 'cell_surface_area', 'cell_warp', 'cell_children', 'cell_refine_level', 'mass_imbalance', 'strain_rate_mag', 'dx_velocity_dx', 'dy_velocity_dx', 'dz_velocity_dx', 'dx_velocity_dy', 'dy_velocity_dy', 'dz_velocity_dy', 'dx_velocity_dz', 'dy_velocity_dz', 'dz_velocity_dz', 'dp_dx', 'dp_dy', 'dp_dz', 'velocity']
 
@@ -209,33 +210,48 @@ class AMSDataObject(object):
         # get color transfer function/color map for 'velocity_magnitude'
         velocity_magnitudeLUT = simple.GetColorTransferFunction('velocity_magnitude')
 
+        self.printDebug()
+
+        
+    def printDebug(self):
+        if self.debug:
+            # This retrieves the name of the calling function.
+            # 0:filename, 1:line number, 2:function, 3:calling string
+            functionName = traceback.extract_stack(None, 2)[0][2]
+            print("calling " + functionName + " for " + self.name)
+
     def hide(self):
+        self.printDebug()
         self.contour1Display = simple.Hide(self.contour1, self.renderView)
 
     def show(self):
+        self.printDebug()
         self.contour1Display = simple.Show(self.contour1, self.renderView)
 
     def showVelocity(self):
-        print("drawing velocity for " + self.name)
+        self.printDebug()
 
         # set scalar coloring
         simple.ColorBy(self.contour1Display, ('POINTS', 'velocity_magnitude'))
 
-        # rescale color and/or opacity maps used to include current data range
-        self.contour1Display.RescaleTransferFunctionToDataRange(True, False)
-        self.renderView.Update()
+        if self.contour1Display:
+            # rescale color and/or opacity maps used to include current data range
+            self.contour1Display.RescaleTransferFunctionToDataRange(True, False)
+            self.renderView.Update()
 
     def showPressure(self):
-        print("drawing pressure for " + self.name)
+        self.printDebug()
 
         # set scalar coloring
         simple.ColorBy(self.contour1Display, ('POINTS', 'pressure'))
 
-        # rescale color and/or opacity maps used to include current data range
-        self.contour1Display.RescaleTransferFunctionToDataRange(True, False)
-        self.renderView.Update()
+        if self.contour1Display:
+            # rescale color and/or opacity maps used to include current data range
+            self.contour1Display.RescaleTransferFunctionToDataRange(True, False)
+            self.renderView.Update()
 
     def toggleTankGeometry(self):
+        self.printDebug()
 
         if not self.tankGeometryInit:
 
@@ -442,33 +458,24 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         print("invoking update?")
         
 
-    def updateSurface(self):
-
-        while time.time() - self.lastTime < 0.5:
-            time.sleep(0.1)
-
-        print("**** changing to ", self.targetVal)
-        for obj in self.dataObjects:
-            
-            obj.contour1.Isosurfaces = [self.targetVal]
-            self.renderView1.Update()
-            self.getApplication().InvokeEvent('UpdateEvent')
-            print("change?")
-
+    @exportRPC("amsprotocol.heartbeat.update")
+    def heartbeatUpdate(self):
+        """
+        Meant to be called at regular intervals so that the other graphics
+        routines can just set parameters and get out.  Sort of simulates a
+        kind of threading.
+        """
+        self.renderView1.Update()
+        self.getApplication().InvokeEvent('UpdateEvent')
+        print("beating over here")
+        return "heart is beating"
         
 
     @exportRPC("amsprotocol.change.surface")
     def changeSurface(self, arg):
 
-        if self.surfaceThread.isAlive():
-            self.lastTime = time.time()
-            self.targetVal = float(arg)
-            print("updating data for thread: " + arg)
-        else:
-            self.lastTime = time.time()
-            print("starting thread..." + arg, self.lastTime)
-            self.surfaceThread = threading.Thread(target=self.updateSurface)
-            self.surfaceThread.start()
-        
-        
+        self.targetVal = float(arg)
+        for obj in self.dataObjects:
+            obj.contour1.Isosurfaces = [self.targetVal]
+
         return "******** executed testbutton with: " + arg + " *******"
