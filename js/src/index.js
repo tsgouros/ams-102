@@ -21,10 +21,26 @@ import ReactDOM from 'react-dom';
 
 import SmartConnect from 'wslink/src/SmartConnect';
 
+import PlotDialog from './PlotDialog';
+
 const config = { sessionURL: 'ws://localhost:1234/ws' };
 const smartConnect = SmartConnect.newInstance({ config });
 
-var model = {};
+const model = {};
+let connectionReady = false;
+
+// This is meant to hold all the variable aspects of a plot *except* the data
+// source (e.g. file name, whatever).  The point is to be able to apply this
+// visualization to whatever data is in the catalog.
+class plotParams {
+  constructor(plotType, variable) {
+    this.plotType = plotType;
+    this.variable = variable;
+  }
+}
+
+// This will be an association of names and plotParam objects.
+const plotCatalog = {}
 
 const amsProtocols = {
   amsService: (session) => {
@@ -67,7 +83,7 @@ const amsProtocols = {
 
       testButton: (testValue) => {
         session.call('amsprotocol.test.button', [ testValue ])
-          .then((result) => console.log('result: ' + result));
+          .then((result) => console.log('result: ' + result.hello));
         console.log("******* testbutton ------>", testValue);
       },
 
@@ -77,8 +93,6 @@ const amsProtocols = {
     };
   },
 };
-
-var connectionReady = false;
 
 smartConnect.onConnectionReady((connection) => {
   model.pvwClient =
@@ -108,6 +122,10 @@ divTitle.innerHTML = '<h1>&nbsp;&nbsp;&nbsp;Hello Amgen World!</h1>';
 
 document.body.style.padding = '50';
 document.body.style.margin = '50';
+
+const divPreRoot = document.createElement('div');
+divPreRoot.id = "preRoot";
+document.body.appendChild(divPreRoot);
 
 const divRoot = document.createElement('div');
 divRoot.id = "root";
@@ -171,11 +189,13 @@ divRenderer.style.overflow = 'hidden';
 
 smartConnect.connect();
 
-var testVal = {hello: 52.6};
+const testVal = {hello: 52.6};
 
 function next() {
   ReactDOM.render(<AMSControlPanel />,
                   document.getElementById('root'));
+  ReactDOM.render(<PlotDialog />,
+                  document.getElementById('preRoot'));
 };
 
 setInterval(next, 5000);
