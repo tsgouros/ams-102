@@ -500,6 +500,8 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         print("calling testbutton with: ")
         print(arg)
 
-        return "******** executed testButton with: " + str(arg) + " *******"
+        return { "hello": 42.5, "bob": "paul" }
+        
+ #       return "******** executed testButton with: " + str(arg) + " *******"
 
     
