@@ -20,7 +20,7 @@ class PlotDialog extends React.Component {
 
   render() {
     return (
-      <div className="PlotDialog">
+        <div className="PlotDialog" style={{display: 'table-cell'}}>
         <button onClick={this.toggleModal}>
           Open the Plot Dialog
         </button>

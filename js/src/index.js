@@ -159,8 +159,8 @@ class AMSControlPanel extends React.Component {
     return (
         <center>
         <div style={{width: '100%', display: 'table'}}>
+        <PlotDialog />        
         <div style={{display: 'table-cell'}}>
-        
         <button onClick={() => model.pvwClient.amsService.testButton(testVal)}>test</button>
         <button onClick={() => model.pvwClient.amsService.drawLowRPM()}>low rpm</button>
         <button onClick={() => model.pvwClient.amsService.drawHighRPM()}>high rpm</button>
@@ -195,8 +195,8 @@ const testVal = {hello: 52.6};
 function next() {
   ReactDOM.render(<AMSControlPanel />,
                   document.getElementById('root'));
-  ReactDOM.render(<PlotDialog />,
-                  document.getElementById('preRoot'));
+  // ReactDOM.render(<PlotDialog />,
+  //                 document.getElementById('preRoot'));
 };
 
 setInterval(next, 5000);
