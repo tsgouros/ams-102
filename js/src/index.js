@@ -186,6 +186,7 @@ divRenderer.style.position = 'relative';
 divRenderer.style.width = '100vw';
 divRenderer.style.height = '100vh';
 divRenderer.style.overflow = 'hidden';
+divRenderer.style.zIndex = '10';
 
 smartConnect.connect();
 
