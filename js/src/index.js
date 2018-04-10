@@ -134,23 +134,38 @@ document.body.appendChild(divRoot);
 class AMSControlPanel extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {surfaceValue: 500};
-    this.updateVal = this.updateVal.bind(this);
+    console.log("AMSControlPanel:", props);
+    props = {bye: 2};
+    this.state = {
+      plotType: "isosurface",
+      surfaceValue: 500
+    };
+    this.updateSliderVal = this.updateSliderVal.bind(this);
+    this.payloadForChild = this.payloadForChild.bind(this);
+    this.returnDataToParent = this.returnDataToParent.bind(this);
   }
 
-  updateVal(e) {
+  returnDataToParent(p) {
+    console.log("returned value:", p);
+  }
+  
+  updateSliderVal(e) {
     // What changes, and what value?
     const which = e.target.name;
     const newVal = e.target.value;
-    const toUpdate = {};
-    toUpdate[which] = newVal;
+    const toUpdateSlider = {};
+    toUpdateSlider[which] = newVal;
 
     // Update the new value in the display.
-    this.setState(toUpdate);
+    this.setState(toUpdateSlider);
 
     console.log(typeof e.target.value);
     // Communicate it to the server.
     model.pvwClient.amsService.changeSurface(e.target.value);
+  }
+
+  payloadForChild() {
+    return {hello: 27.3};
   }
     
   render() {
@@ -159,7 +174,8 @@ class AMSControlPanel extends React.Component {
     return (
         <center>
         <div style={{width: '100%', display: 'table'}}>
-        <PlotDialog />        
+        <PlotDialog deliverPayloadToChild={this.payloadForChild}
+                    returnToParent={this.returnDataToParent}/>        
         <div style={{display: 'table-cell'}}>
         <button onClick={() => model.pvwClient.amsService.testButton(testVal)}>test</button>
         <button onClick={() => model.pvwClient.amsService.drawLowRPM()}>low rpm</button>
@@ -170,7 +186,7 @@ class AMSControlPanel extends React.Component {
         </div>
         <div style={{display: 'table-cell'}}>
         <NumberSliderWidget value={surfaceValue}
-            max="1000" min="10" onChange={this.updateVal} name="surfaceValue"/>
+            max="1000" min="10" onChange={this.updateSliderVal} name="surfaceValue"/>
         </div>
         </div>
 
