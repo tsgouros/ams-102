@@ -21,6 +21,18 @@ class PlotDialog extends React.Component {
     // the value that is selected.
     this.dialogDescription = this.props.deliverPayloadToChild();
 
+    // This will hold the results of the dialog session.  We have to
+    // keep the widget type because there is something odd about the
+    // handling of values for the enum type.
+    this.dialogResults =
+      this.dialogDescription.reduce(function(dialogObj,dialogItem) {
+        dialogObj[dialogItem.id] = {
+          value: dialogItem.selected,
+          widgetType: dialogItem.widgetType,
+        };
+        return dialogObj;
+      }, {});
+
     console.log("dialogDescription:", this.dialogDescription);
 
     // Convert the dialog description into a list of actionable pieces, as
@@ -34,25 +46,34 @@ class PlotDialog extends React.Component {
             result[item] = item; return result;}, {});
         } else if (dialogItem.widgetType == "slider") {
           itemDomain = { min: dialogItem.vals[0], max: dialogItem.vals[1] };
+        } else if (dialogItem.widgetType == "cell") {
+          itemDomain = { range: [{ min: dialogItem.vals[0],
+                                   max: dialogItem.vals[1],
+                                   force: true,
+                                 }]
+                       };
         }
 
         dialogList.push({
           data: { value: dialogItem.selected, id: dialogItem.id },
           name: dialogItem.name,
           show: () => true,
+          widgetType: dialogItem.widgetType,
           ui: {
             propType: dialogItem.widgetType,
             label: dialogItem.name,
             domain: itemDomain,
-            type: dialogItem.dataType
+            type: dialogItem.dataType,
+            layout: '1',
+            componentLabels: [''],
           },
           onChange: function onChange(data) {
-            console.log(JSON.stringify(data));
-            if (dialogItem.widgetType == "enum") {
-              dialogItem.selected = data.value[0];
-              data.value = dialogItem.selected;
+            console.log("onChange:", JSON.stringify(data));
+            if (this.dialogResults[data.id].widgetType == "enum") {
+              this.dialogResults[data.id].value = data.value[0];
+              data.value = this.dialogResults[data.id].value;
             } else {
-              dialogItem.selected = data.value;
+              this.dialogResults[data.id].value = data.value;
             }
             this.render();
           },
@@ -218,7 +239,7 @@ class PlotDialog extends React.Component {
     
   render() {
 
-    console.log("rendering:::", this.properties);
+    console.log("rendering:::", this.properties, this.dialogResults);
 
     return (
         <div className="PlotDialog" style={{display: 'table-cell'}}>
@@ -231,7 +252,6 @@ class PlotDialog extends React.Component {
 
         <PropertyPanel {...this.properties} />
       
-      `Not functional yet, but this is vaguely what it will look like:` + {JSON.stringify(this.properties1.data.value)}
         </Modal>
       </div>
     );

@@ -185,11 +185,19 @@ class AMSControlPanel extends React.Component {
       {
         name: "some value",
         widgetType: "slider",
-        vals: [0, 1],
-        selected: 0.5,
+        vals: [0, 10],
+        selected: 5,
         id: "slider.value",
-        dataType: "double",
-      }
+        dataType: "int",
+      },
+      // {
+      //   name: "some other value",
+      //   widgetType: "cell",
+      //   vals: [0, 1],
+      //   selected: 0.5,
+      //   id: "cell.value",
+      //   dataType: "double",
+      // },
     ];
   }
     
