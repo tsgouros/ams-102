@@ -173,6 +173,7 @@ class AMSControlPanel extends React.Component {
         selected: "contour",      // the current value
         id: "enum.plotType",      // just has to be unique in this list
         dataType: "string",           // 'string' or 'int'
+        help: "A little help text...",
       },
       {
         name: "variable",
@@ -181,6 +182,7 @@ class AMSControlPanel extends React.Component {
         selected: "velocity",
         id: "enum.variable",
         dataType: "string",
+        help: "A little help text...",
       },
       {
         name: "some value",
@@ -189,15 +191,26 @@ class AMSControlPanel extends React.Component {
         selected: 5,
         id: "slider.value",
         dataType: "int",
+        help: "A little help text...",
       },
-      // {
-      //   name: "some other value",
-      //   widgetType: "cell",
-      //   vals: [0, 1],
-      //   selected: 0.5,
-      //   id: "cell.value",
-      //   dataType: "double",
-      // },
+      {
+        name: "some other value",
+        widgetType: "cell",
+        vals: [0, 1],
+        selected: [0.5],
+        id: "cell.value",
+        dataType: "double",
+        help: "A little help text...",
+      },
+      {
+        name: "still another value",
+        widgetType: "cell",
+        vals: [0, 10],
+        selected: [5],
+        id: "cell.value.2",
+        dataType: "int",
+        help: "A little help text...",
+      },
     ];
   }
     
