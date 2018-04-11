@@ -141,11 +141,11 @@ class AMSControlPanel extends React.Component {
       surfaceValue: 500
     };
     this.updateSliderVal = this.updateSliderVal.bind(this);
-    this.payloadForChild = this.payloadForChild.bind(this);
-    this.returnDataToParent = this.returnDataToParent.bind(this);
+    this.dialogSpec = this.dialogSpec.bind(this);
+    this.returnDialogState = this.returnDialogState.bind(this);
   }
 
-  returnDataToParent(p) {
+  returnDialogState(p) {
     console.log("returned value:", p);
   }
   
@@ -164,7 +164,7 @@ class AMSControlPanel extends React.Component {
     model.pvwClient.amsService.changeSurface(e.target.value);
   }
 
-  payloadForChild() {
+  dialogSpec() {
     return [
       {
         name: "plotType",
@@ -220,8 +220,8 @@ class AMSControlPanel extends React.Component {
     return (
         <center>
         <div style={{width: '100%', display: 'table'}}>
-        <PlotDialog deliverPayloadToChild={this.payloadForChild}
-                    returnToParent={this.returnDataToParent}/>        
+        <PlotDialog deliverDialogSpec={this.dialogSpec}
+                    returnDialogResults={this.returnDialogState}/>        
         <div style={{display: 'table-cell'}}>
         <button onClick={() => model.pvwClient.amsService.testButton(testVal)}>test</button>
         <button onClick={() => model.pvwClient.amsService.drawLowRPM()}>low rpm</button>

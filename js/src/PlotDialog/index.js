@@ -10,16 +10,21 @@ class PlotDialog extends React.Component {
   constructor(props) {
     super(props);
 
+    // The super doesn't seem to care about props, but props contains
+    // the payloadForChild object, bringing data from our parent, and
+    // the returnDialogResults object, for sending it back the other
+    // direction.
+    // console.log("props:", props);
 
-    console.log("props:", props);
-    
+    // This refers to whether the dialog is being displayed or not.
+    // See toggleModal() below.
     this.state = { isOpen: false };
 
     // Get the data from the parent.  This will be a description of what
     // the dialog should look like, a collection of objects, each of which
     // has a name to display, a type of widget, the values it can take, and
     // the value that is selected.
-    this.dialogDescription = this.props.deliverPayloadToChild();
+    this.dialogDescription = this.props.deliverDialogSpec();
 
     // This will hold the results of the dialog session.  We have to
     // keep the widget type because there is something odd about the
@@ -33,13 +38,15 @@ class PlotDialog extends React.Component {
         return dialogObj;
       }, {});
 
-    console.log("dialogDescription:", this.dialogDescription);
+    //console.log("dialogDescription:", this.dialogDescription);
 
     // Convert the dialog description into a list of actionable pieces, as
     // they are expected by the PropertyPanel widget.  This is essentially
     // just format conversion, plus defining the onChange() function.
     this.dialogList = 
       this.dialogDescription.reduce(function(dialogList, dialogItem) {
+
+        // The domains differ according to the widget type.
         let itemDomain = {};
         if (dialogItem.widgetType == "enum") {
           itemDomain = dialogItem.vals.reduce(function(result, item) {
@@ -53,7 +60,9 @@ class PlotDialog extends React.Component {
                                  }]
                        };
         }
-
+        // Add an item to the dialog list, this is the format expected
+        // by the PropPanel widget.  Note that the id vaues must be
+        // unique to each item.
         dialogList.push({
           data: { value: dialogItem.selected, id: dialogItem.id },
           name: dialogItem.name,
@@ -82,19 +91,20 @@ class PlotDialog extends React.Component {
         return dialogList;
       }, [] );
 
-    // Make sure all the onChange functions see the correct render() method.
+    // Set the this pointer to make sure all the onChange functions
+    // see the correct render() method and can find the dialogResults
+    // object.
     for (var i = 0; i < this.dialogList.length; i++) {
       this.dialogList[i].onChange = this.dialogList[i].onChange.bind(this);
     }
     
-    console.log("dialogList:", this.dialogList);
+    //console.log("dialogList:", this.dialogList);
     
     this.properties = {
       input: [
         {
           title: 'Edit a Visualization',
           contents: this.dialogList,
-          payload: this.props.deliverPayloadToChild(),
         },
       ],
       // setting this change handler overrides all individual component
@@ -110,8 +120,11 @@ class PlotDialog extends React.Component {
     // React.Component, which has the setState() method used in toggleModal.
     this.toggleModal = this.toggleModal.bind(this);
   }
-  
+
+  // Called to open the dialog, and to close it.
   toggleModal() {
+    this.props.returnDialogResults(this.dialogResults);
+
     this.setState({
       isOpen: !this.state.isOpen
     });
@@ -119,7 +132,7 @@ class PlotDialog extends React.Component {
     
   render() {
 
-    console.log("rendering:::", this.properties, this.dialogResults);
+    //console.log("rendering:::", this.properties, this.dialogResults);
 
     return (
         <div className="PlotDialog" style={{display: 'table-cell'}}>
