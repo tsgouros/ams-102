@@ -168,19 +168,27 @@ class AMSControlPanel extends React.Component {
     return [
       {
         name: "plotType",
-        type: "selectBox",
-        vals: ["contour", "streamlines"],
-        selected: "contour",
-        id: "enum.plotType",
-        type: "string",
+        widgetType: "enum",
+        vals: ["contour", "streamlines"],  // the list of possible values
+        selected: "contour",      // the current value
+        id: "enum.plotType",      // just has to be unique in this list
+        dataType: "string",           // 'string' or 'int'
       },
       {
         name: "variable",
-        type: "selectBox",
+        widgetType: "enum",
         vals: ["pressure", "velocity"],
         selected: "velocity",
         id: "enum.variable",
-        type: "string",
+        dataType: "string",
+      },
+      {
+        name: "some value",
+        widgetType: "slider",
+        vals: [0, 1],
+        selected: 0.5,
+        id: "slider.value",
+        dataType: "double",
       }
     ];
   }

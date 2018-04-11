@@ -28,21 +28,32 @@ class PlotDialog extends React.Component {
     // just format conversion, plus defining the onChange() function.
     this.dialogList = 
       this.dialogDescription.reduce(function(dialogList, dialogItem) {
+        let itemDomain = {};
+        if (dialogItem.widgetType == "enum") {
+          itemDomain = dialogItem.vals.reduce(function(result, item) {
+            result[item] = item; return result;}, {});
+        } else if (dialogItem.widgetType == "slider") {
+          itemDomain = { min: dialogItem.vals[0], max: dialogItem.vals[1] };
+        }
+
         dialogList.push({
           data: { value: dialogItem.selected, id: dialogItem.id },
           name: dialogItem.name,
           show: () => true,
           ui: {
-            propType: 'enum',
+            propType: dialogItem.widgetType,
             label: dialogItem.name,
-            domain: dialogItem.vals.reduce(function(result, item) {
-              result[item] = item; return result;}, {}),
-            type: dialogItem.type
+            domain: itemDomain,
+            type: dialogItem.dataType
           },
           onChange: function onChange(data) {
             console.log(JSON.stringify(data));
-            dialogItem.selected = data.value[0];
-            data.value = dialogItem.selected;
+            if (dialogItem.widgetType == "enum") {
+              dialogItem.selected = data.value[0];
+              data.value = dialogItem.selected;
+            } else {
+              dialogItem.selected = data.value;
+            }
             this.render();
           },
         });
