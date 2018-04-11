@@ -15,6 +15,47 @@ class PlotDialog extends React.Component {
     
     this.state = { isOpen: false };
 
+    // Get the data from the parent.  This will be a description of what
+    // the dialog should look like, a collection of objects, each of which
+    // has a name to display, a type of widget, the values it can take, and
+    // the value that is selected.
+    this.dialogDescription = this.props.deliverPayloadToChild();
+
+    console.log("dialogDescription:", this.dialogDescription);
+
+    // Convert the dialog description into a list of actionable pieces, as
+    // they are expected by the PropertyPanel widget.  This is essentially
+    // just format conversion, plus defining the onChange() function.
+    this.dialogList = 
+      this.dialogDescription.reduce(function(dialogList, dialogItem) {
+        dialogList.push({
+          data: { value: dialogItem.selected, id: dialogItem.id },
+          name: dialogItem.name,
+          show: () => true,
+          ui: {
+            propType: 'enum',
+            label: dialogItem.name,
+            domain: dialogItem.vals.reduce(function(result, item) {
+              result[item] = item; return result;}, {}),
+            type: dialogItem.type
+          },
+          onChange: function onChange(data) {
+            console.log(JSON.stringify(data));
+            dialogItem.selected = data.value[0];
+            data.value = dialogItem.selected;
+            this.render();
+          },
+        });
+        return dialogList;
+      }, [] );
+
+    // Make sure all the onChange functions see the correct render() method.
+    for (var i = 0; i < this.dialogList.length; i++) {
+      this.dialogList[i].onChange = this.dialogList[i].onChange.bind(this);
+    }
+    
+    console.log("dialogList:", this.dialogList);
+    
     this.currVal = 2;
     this.currVal3 = ['Temperature', 'Pressure', 'Velocity'];
     this.currValCheck = [true, false];
@@ -50,7 +91,8 @@ class PlotDialog extends React.Component {
       name: 'enum',
       onChange: function onChange(data) {
         console.log(data.value);
-        this.currVal3 = data.value;
+        this.currVal3 = data.value[0];
+        data.value = this.currVal3;
         this.render();
       },
       show: () => true,
@@ -67,7 +109,7 @@ class PlotDialog extends React.Component {
           dessert: 'dessert',
         },
         type: 'string',
-        size: -1,
+        //size: -1,
       },
     };
 
@@ -131,13 +173,7 @@ class PlotDialog extends React.Component {
       input: [
         {
           title: 'Edit a Visualization',
-          contents: [
-            this.properties1,
-            this.properties3,
-            this.propertiesCheck,
-            this.propSlider,
-            this.propCell,
-          ],
+          contents: this.dialogList,
           payload: this.props.deliverPayloadToChild(),
         },
       ],
@@ -171,7 +207,7 @@ class PlotDialog extends React.Component {
     
   render() {
 
-    console.log("rendering", this.properties);
+    console.log("rendering:::", this.properties);
 
     return (
         <div className="PlotDialog" style={{display: 'table-cell'}}>

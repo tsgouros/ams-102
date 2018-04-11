@@ -165,7 +165,24 @@ class AMSControlPanel extends React.Component {
   }
 
   payloadForChild() {
-    return {hello: 27.3};
+    return [
+      {
+        name: "plotType",
+        type: "selectBox",
+        vals: ["contour", "streamlines"],
+        selected: "contour",
+        id: "enum.plotType",
+        type: "string",
+      },
+      {
+        name: "variable",
+        type: "selectBox",
+        vals: ["pressure", "velocity"],
+        selected: "velocity",
+        id: "enum.variable",
+        type: "string",
+      }
+    ];
   }
     
   render() {
