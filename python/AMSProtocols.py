@@ -1,6 +1,5 @@
 import os, sys, logging, types, inspect, traceback, logging, re, json, base64
 import time
-import threading
 
 # import RPC annotation
 from wslink import register as exportRPC
@@ -114,207 +113,8 @@ def simpleColorBy(rep=None, value=None):
 #
 # =============================================================================
 
-class AMSDataObject(object):
-    def __init__(self, fileName, renderView):
 
-        self.name = fileName
-        self.debug = True
-        self.dataFile = simple.EnSightReader(CaseFileName=fileName)
-        self.dataFile.PointArrays = ['pressure', 'pressure_coefficient', 'dynamic_pressure', 'absolute_pressure', 'total_pressure', 'rel_total_pressure', 'density', 'density_all', 'velocity_magnitude', 'x_velocity', 'y_velocity', 'z_velocity', 'axial_velocity', 'radial_velocity', 'tangential_velocity', 'rel_velocity_magnitude', 'relative_x_velocity', 'relative_y_velocity', 'relative_z_velocity', 'rel_tangential_velocity', 'mesh_x_velocity', 'mesh_y_velocity', 'mesh_z_velocity', 'velocity_angle', 'relative_velocity_angle', 'vorticity_mag', 'helicity', 'x_vorticity', 'y_vorticity', 'z_vorticity', 'cell_reynolds_number', 'turb_kinetic_energy', 'turb_intensity', 'turb_diss_rate', 'production_of_k', 'viscosity_turb', 'viscosity_eff', 'viscosity_ratio', 'y_star', 'y_plus', 'uds_0_scalar', 'uds_0_diff_scalar', 'viscosity_lam', 'wall_shear', 'x_wall_shear', 'y_wall_shear', 'z_wall_shear', 'skin_friction_coef', 'cell_partition_active', 'cell_partition_stored', 'cell_id', 'cell_element_type', 'cell_type', 'cell_zone', 'partition_neighbors', 'cell_weight', 'x_coordinate', 'y_coordinate', 'z_coordinate', 'axial_coordinate', 'angular_coordinate', 'abs_angular_coordinate', 'radial_coordinate', 'face_area_magnitude', 'x_face_area', 'y_face_area', 'z_face_area', 'cell_volume', 'orthogonal_quality', 'cell_equiangle_skew', 'cell_equivolume_skew', 'face_handedness', 'mark_poor_elememts', 'interface_overlap_fraction', 'cell_wall_distance', 'adaption_function', 'adaption_curvature', 'adaption_space_gradient', 'adaption_iso_value', 'boundary_cell_dist', 'boundary_normal_dist', 'cell_volume_change', 'cell_surface_area', 'cell_warp', 'cell_children', 'cell_refine_level', 'mass_imbalance', 'strain_rate_mag', 'dx_velocity_dx', 'dy_velocity_dx', 'dz_velocity_dx', 'dx_velocity_dy', 'dy_velocity_dy', 'dz_velocity_dy', 'dx_velocity_dz', 'dy_velocity_dz', 'dz_velocity_dz', 'dp_dx', 'dp_dy', 'dp_dz', 'velocity']
-
-        self.renderView = renderView
-        self.tankGeometryShown = False
-        self.tankGeometryInit = False
-
-        # get color transfer function/color map for 'pressure'
-        pressureLUT = simple.GetColorTransferFunction('pressure')
-
-        # get opacity transfer function/opacity map for 'pressure'
-        pressurePWF = simple.GetOpacityTransferFunction('pressure')
-
-        # create a new 'Contour'
-        self.contour1 = simple.Contour(Input=self.dataFile)
-        self.contour1.ContourBy = ['POINTS', 'pressure']
-        self.contour1.Isosurfaces = [-3.9317703247070312]
-        self.contour1.PointMergeMethod = 'Uniform Binning'
-
-        # Properties modified on contour1
-        self.contour1.ContourBy = ['POINTS', 'uds_0_scalar']
-        self.contour1.Isosurfaces = [480.0]
-
-        # show data in view
-        self.contour1Display = simple.Show(self.contour1, self.renderView)
-
-        # trace defaults for the display properties.
-        self.contour1Display.Representation = 'Surface'
-        self.contour1Display.ColorArrayName = ['POINTS', 'pressure']
-        self.contour1Display.LookupTable = pressureLUT
-        self.contour1Display.OSPRayScaleArray = 'Normals'
-        self.contour1Display.OSPRayScaleFunction = 'PiecewiseFunction'
-        self.contour1Display.SelectOrientationVectors = 'velocity'
-        self.contour1Display.ScaleFactor = 0.07228952534496784
-        self.contour1Display.SelectScaleArray = 'None'
-        self.contour1Display.GlyphType = 'Arrow'
-        self.contour1Display.GlyphTableIndexArray = 'None'
-        self.contour1Display.GaussianRadius = 0.03614476267248392
-        self.contour1Display.SetScaleArray = ['POINTS', 'Normals']
-        self.contour1Display.ScaleTransferFunction = 'PiecewiseFunction'
-        self.contour1Display.OpacityArray = ['POINTS', 'Normals']
-        self.contour1Display.OpacityTransferFunction = 'PiecewiseFunction'
-        self.contour1Display.DataAxesGrid = 'GridAxesRepresentation'
-        self.contour1Display.SelectionCellLabelFontFile = ''
-        self.contour1Display.SelectionPointLabelFontFile = ''
-        self.contour1Display.PolarAxes = 'PolarAxesRepresentation'
-
-        # init the 'PiecewiseFunction' selected for 'ScaleTransferFunction'
-        self.contour1Display.ScaleTransferFunction.Points = [-0.9995924830436707, 0.0, 0.5, 0.0, 0.9998393058776855, 1.0, 0.5, 0.0]
-
-        # init the 'PiecewiseFunction' selected for 'OpacityTransferFunction'
-        self.contour1Display.OpacityTransferFunction.Points = [-0.9995924830436707, 0.0, 0.5, 0.0, 0.9998393058776855, 1.0, 0.5, 0.0]
-
-        # init the 'GridAxesRepresentation' selected for 'DataAxesGrid'
-        self.contour1Display.DataAxesGrid.XTitleFontFile = ''
-        self.contour1Display.DataAxesGrid.YTitleFontFile = ''
-        self.contour1Display.DataAxesGrid.ZTitleFontFile = ''
-        self.contour1Display.DataAxesGrid.XLabelFontFile = ''
-        self.contour1Display.DataAxesGrid.YLabelFontFile = ''
-        self.contour1Display.DataAxesGrid.ZLabelFontFile = ''
-
-        # init the 'PolarAxesRepresentation' selected for 'PolarAxes'
-        self.contour1Display.PolarAxes.PolarAxisTitleFontFile = ''
-        self.contour1Display.PolarAxes.PolarAxisLabelFontFile = ''
-        self.contour1Display.PolarAxes.LastRadialAxisTextFontFile = ''
-        self.contour1Display.PolarAxes.SecondaryRadialAxesTextFontFile = ''
-
-        # reset view to fit data
-        self.renderView.ResetCamera()
-
-        # hide data in view
-        simple.Hide(self.dataFile, self.renderView)
-
-        # show color bar/color legend
-        self.contour1Display.SetScalarBarVisibility(self.renderView, True)
-
-        # update the view to ensure updated data information
-        self.renderView.Update()
-
-        # set scalar coloring
-        simple.ColorBy(self.contour1Display, ('POINTS', 'velocity_magnitude'))
-
-        # rescale color and/or opacity maps used to include current data range
-        self.contour1Display.RescaleTransferFunctionToDataRange(True, False)
-
-        # show color bar/color legend
-        self.contour1Display.SetScalarBarVisibility(self.renderView, True)
-
-        # get color transfer function/color map for 'velocity_magnitude'
-        velocity_magnitudeLUT = simple.GetColorTransferFunction('velocity_magnitude')
-
-        self.printDebug()
-
-        
-    def printDebug(self):
-        if self.debug:
-            # This retrieves the name of the calling function.
-            # 0:filename, 1:line number, 2:function, 3:calling string
-            functionName = traceback.extract_stack(None, 2)[0][2]
-            print("calling " + functionName + " for " + self.name)
-
-    def hide(self):
-        self.printDebug()
-        self.contour1Display = simple.Hide(self.contour1, self.renderView)
-
-    def show(self):
-        self.printDebug()
-        self.contour1Display = simple.Show(self.contour1, self.renderView)
-
-    def showVelocity(self):
-        self.printDebug()
-
-        # set scalar coloring
-        simple.ColorBy(self.contour1Display, ('POINTS', 'velocity_magnitude'))
-
-        if self.contour1Display:
-            # rescale color and/or opacity maps used to include current data range
-            self.contour1Display.RescaleTransferFunctionToDataRange(True, False)
-            self.renderView.Update()
-
-    def showPressure(self):
-        self.printDebug()
-
-        # set scalar coloring
-        simple.ColorBy(self.contour1Display, ('POINTS', 'pressure'))
-
-        if self.contour1Display:
-            # rescale color and/or opacity maps used to include current data range
-            self.contour1Display.RescaleTransferFunctionToDataRange(True, False)
-            self.renderView.Update()
-
-    def toggleTankGeometry(self):
-        self.printDebug()
-
-        if not self.tankGeometryInit:
-
-            # create a new 'Contour'
-            self.contour2 = simple.Contour(Input=self.dataFile)
-            self.contour2.PointMergeMethod = 'Uniform Binning'
-
-            # Properties modified on self.contour2
-            self.contour2.ContourBy = ['POINTS', 'wall_shear']
-            self.contour2.Isosurfaces = [0.0002]
-
-            # show data in view
-            self.contour2Display = simple.Show(self.contour2, self.renderView)
-
-            # trace defaults for the display properties.
-            self.contour2Display.Representation = 'Surface'
-            self.contour2Display.ColorArrayName = [None, '']
-            self.contour2Display.OSPRayScaleFunction = 'PiecewiseFunction'
-            self.contour2Display.SelectOrientationVectors = 'None'
-            self.contour2Display.ScaleFactor = -2.0000000000000002e+298
-            self.contour2Display.SelectScaleArray = 'None'
-            self.contour2Display.GlyphType = 'Arrow'
-            self.contour2Display.GlyphTableIndexArray = 'None'
-            self.contour2Display.GaussianRadius = -1.0000000000000001e+298
-            self.contour2Display.SetScaleArray = [None, '']
-            self.contour2Display.ScaleTransferFunction = 'PiecewiseFunction'
-            self.contour2Display.OpacityArray = [None, '']
-            self.contour2Display.OpacityTransferFunction = 'PiecewiseFunction'
-            self.contour2Display.DataAxesGrid = 'GridAxesRepresentation'
-            self.contour2Display.SelectionCellLabelFontFile = ''
-            self.contour2Display.SelectionPointLabelFontFile = ''
-            self.contour2Display.PolarAxes = 'PolarAxesRepresentation'
-
-            # init the 'GridAxesRepresentation' selected for 'DataAxesGrid'
-            self.contour2Display.DataAxesGrid.XTitleFontFile = ''
-            self.contour2Display.DataAxesGrid.YTitleFontFile = ''
-            self.contour2Display.DataAxesGrid.ZTitleFontFile = ''
-            self.contour2Display.DataAxesGrid.XLabelFontFile = ''
-            self.contour2Display.DataAxesGrid.YLabelFontFile = ''
-            self.contour2Display.DataAxesGrid.ZLabelFontFile = ''
-
-            # init the 'PolarAxesRepresentation' selected for 'PolarAxes'
-            self.contour2Display.PolarAxes.PolarAxisTitleFontFile = ''
-            self.contour2Display.PolarAxes.PolarAxisLabelFontFile = ''
-            self.contour2Display.PolarAxes.LastRadialAxisTextFontFile = ''
-            self.contour2Display.PolarAxes.SecondaryRadialAxesTextFontFile = ''
-
-            # Properties modified on contour2Display
-            self.contour2Display.Opacity = 0.1
-
-            # change solid color
-            self.contour2Display.DiffuseColor = [0.0, 0.5, 0.5]
-
-            self.tankGeometryInit = True
-            self.tankGeometryShown = True
-
-        else:
-            if self.tankGeometryShown:
-                self.contour2Display = simple.Hide(self.contour2, self.renderView)
-                self.tankGeometryShown = False
-            else:
-                self.contour2Display = simple.Show(self.contour2, self.renderView)
-                self.tankGeometryShown = True
+from AMS2Protocols import *
 
 
 class AMSTest(pv_protocols.ParaViewWebProtocol):
@@ -327,7 +127,7 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         self.foreground = [ 1, 1, 1]
         self.background = [ 0, 0, 0]
         self.colorBy = ('__SOLID__', '__SOLID__')
-        self.view = simple.GetRenderView()
+
         self.config = config
         self.profile = profile
 
@@ -340,13 +140,6 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         # A time stamp to keep from overloading the server.
         self.lastTime = 0  
 
-        # get active view
-        self.renderView1 = simple.GetActiveViewOrCreate('RenderView')
-        # uncomment following to set a specific view size
-        # renderView1.ViewSize = [1638, 1076]
-
-        self.surfaceThread = threading.Thread(target=self.doNothing)
-
     def printDebug(self):
         if self.debug:
             # This retrieves the name of the calling function.
@@ -354,9 +147,6 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
             functionName = traceback.extract_stack(None, 2)[0][2]
             print("calling " + functionName + " for " + self.name)
 
-    def doNothing(self):
-        print("ready")
-        
     def initializeData(self, dataFileNames):
         """
         Initialize data from a list of data files.  Show the first one, hide
@@ -364,10 +154,11 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         """
         i = 0
         for dataFile in dataFileNames:
-            self.addObject(AMSDataObject(dataFile, self.renderView1))
+            self.addObject(AMSDataObject(dataFile))
 
             if i == 0:
                 self.dataObjects[0].show()
+                self.dataObjects[0].takeStandardView()
                 i += 1
             else:
                 self.dataObjects[1].hide()
@@ -408,67 +199,10 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         return "**** executed draw250rpm() ****"
 
 
-    def takeStandardView(self):
-
-        # current camera placement for renderView1
-        self.renderView1.CameraPosition = [1.3051878628081257, -1.32358496378265, -0.017141331493847792]
-        self.renderView1.CameraFocalPoint = [-0.052487090229988105, 0.03264869749546056, -0.3026974257081747]
-        self.renderView1.CameraViewUp = [-0.5051031518286454, -0.33848038039346323, 0.7939155106820026]
-        self.renderView1.CameraParallelScale = 0.502148522908922
-        ##################################################
-
-
-    # def modifyImage(self):
-
-    #     if (self.toggle):
-    #         print("drawing pressure.....")
-
-    #         for obj in self.dataObjects:
-            
-    #             # set scalar coloring
-    #             simple.ColorBy(obj.contour1Display, ('POINTS', 'pressure'))
-
-    #             obj.contour1Display.RescaleTransferFunctionToDataRange(True, False)
-    #             obj.renderView1.Update()
-
-
-    #     else:
-    #         print("changing back......")
-
-    #         # set scalar coloring
-    #         simple.ColorBy(self.contour1Display, ('POINTS', 'velocity_magnitude'))
-
-    #         # rescale color and/or opacity maps used to include current data range
-    #         self.contour1Display.RescaleTransferFunctionToDataRange(True, False)
-    #         self.renderView1.Update()
-
-    #     self.toggle = not self.toggle
-
-
-    @exportRPC("amsprotocol.show.velocity")
-    def showVelocity(self):
-        print("drawing velocity.")
-
-        self.dataObjects[0].showVelocity()
-        self.dataObjects[1].showVelocity()
-        self.getApplication().InvokeEvent('UpdateEvent')
-        return "**** executed showVelocity() ****"
-
-
-    @exportRPC("amsprotocol.show.pressure")
-    def showPressure(self):
-        print("drawing pressure.")
-
-        self.dataObjects[0].showPressure()
-        self.dataObjects[1].showPressure()
-        self.getApplication().InvokeEvent('UpdateEvent')
-        return "**** executed showPressure() ****"
-
     @exportRPC("amsprotocol.show.tank.geometry")
     def showTankGeometry(self):
 
         self.dataObjects[0].toggleTankGeometry()
-        self.renderView1.Update()
         self.getApplication().InvokeEvent('UpdateEvent')
         print("invoking update?")
         
@@ -480,7 +214,6 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         routines can just set parameters and get out.  Sort of simulates a
         kind of threading.
         """
-        self.renderView1.Update()
         self.getApplication().InvokeEvent('UpdateEvent')
         return "heart is beating"
         
@@ -490,7 +223,7 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
 
         self.targetVal = float(arg)
         for obj in self.dataObjects:
-            obj.contour1.Isosurfaces = [self.targetVal]
+            obj.setIsoSurfaces([self.targetVal])
 
         return "******** executed changeSurface with: " + arg + " *******"
 

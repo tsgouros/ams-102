@@ -192,8 +192,6 @@ class AMSServer(pv_wslink.PVServerProtocol):
         else:
             amstest.initializeData( ["/Users/tomfool/tech/18/amgen/ams-102-AgileViz/EnSight/mat-viz-mofTFF-90L-9.1lpm-100rpm/mat-viz-mofTFF-90L-9.1lpm-100rpm.case", "/Users/tomfool/tech/18/amgen/ams-102-AgileViz/EnSight/mat-viz-mofTFF-90L-9.1lpm-250rpm/mat-viz-mofTFF-90L-9.1lpm-250rpm.case" ])
 
-        amstest.takeStandardView()
-
          # Update interaction mode
         pxm = simple.servermanager.ProxyManager()
         interactionProxy = pxm.GetProxy('settings',
