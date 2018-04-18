@@ -11,7 +11,7 @@ class PlotDialog extends React.Component {
     super(props);
 
     // The super doesn't seem to care about props, but props contains
-    // the payloadForChild object, bringing data from our parent, and
+    // the deliverDialogSpecs object, bringing data from our parent, and
     // the returnDialogResults object, for sending it back the other
     // direction.
     // console.log("props:", props);
@@ -54,11 +54,15 @@ class PlotDialog extends React.Component {
         } else if (dialogItem.widgetType == "slider") {
           itemDomain = { min: dialogItem.vals[0], max: dialogItem.vals[1] };
         } else if (dialogItem.widgetType == "cell") {
-          itemDomain = { range: [{ min: dialogItem.vals[0],
-                                   max: dialogItem.vals[1],
-                                   force: true,
-                                 }]
-                       };
+          if (dialogItem.dataType != "string") {
+            itemDomain = { range: [{ min: dialogItem.vals[0],
+                                     max: dialogItem.vals[1],
+                                     force: true,
+                                   }]
+                         };
+          } else {
+            itemDomain = { range: [{ force: false }] };
+          }
         }
         // Add an item to the dialog list, this is the format expected
         // by the PropPanel widget.  Note that the id vaues must be
@@ -123,7 +127,9 @@ class PlotDialog extends React.Component {
 
   // Called to open the dialog, and to close it.
   toggleModal() {
-    this.props.returnDialogResults(this.dialogResults);
+    if (this.state.isOpen) {
+      this.props.returnDialogResults(this.dialogResults);
+    };
 
     this.setState({
       isOpen: !this.state.isOpen
