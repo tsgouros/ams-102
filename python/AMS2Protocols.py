@@ -120,7 +120,7 @@ class AMSPlot(object):
 
     def draw(self):
 
-        if self.plotRecipe.get('enum.plotType') == 'contour':
+        if self.plotRecipe.get('EnumPlotType') == 'contour':
             self.makeContour()
         else:
             self.makeStream()
@@ -131,19 +131,17 @@ class AMSPlot(object):
     def makeContour(self):
 
         # get color transfer function/color map for the data to color with.
-        #dataLUT = simple.GetColorTransferFunction(self.plotRecipe.get('enum.color.variable'))
-        dataLUT = simple.GetColorTransferFunction('pressure')
-
+        dataLUT = simple.GetColorTransferFunction(self.plotRecipe.get('EnumColorVariable'))
 
         # create a new 'Contour'
         contour = simple.Contour(Input=self.dataObject.getData())
 
-        print self.plotRecipe.get('double.contour.value')
-        print self.plotRecipe.get('enum.contour.variable')
+        print self.plotRecipe.get('DoubleContourValue')
+        print self.plotRecipe.get('EnumContourVariable')
         # Properties modified on contour
         #contour.ContourBy = ['POINTS', self.plotRecipe.get('enum.contour.variable')]
         contour.ContourBy = ['POINTS', 'uds_0_scalar']
-        contour.Isosurfaces = self.plotRecipe.get('double.contour.value')
+        contour.Isosurfaces = self.plotRecipe.get('DoubleContourValue')
 
 
         # show data in view
@@ -155,7 +153,7 @@ class AMSPlot(object):
         contourDisplay.SetScalarBarVisibility(self.dataObject.renderView, True)
 
         # set scalar coloring
-        ColorBy(contourDisplay, ('POINTS', self.plotRecipe.get('enum.color.variable'), 'Magnitude'))
+        ColorBy(contourDisplay, ('POINTS', self.plotRecipe.get('EnumColorVariable'), 'Magnitude'))
 
         # Hide the scalar bar for this color map if no visible data is
         # colored by it.
@@ -172,7 +170,7 @@ class AMSPlot(object):
     def makeStream(self):
 
         # get color transfer function/color map for the data to color with.
-        dataLUT = simple.GetColorTransferFunction(self.plotRecipe.get('enum.color.variable'))
+        dataLUT = simple.GetColorTransferFunction(self.plotRecipe.get('EnumColorVariable'))
 
         # create a new 'Stream Tracer'
         streamTracer = simple.StreamTracer(Input=self.dataObject.getData(),
@@ -199,7 +197,7 @@ class AMSPlot(object):
         ribbon = simple.Ribbon(Input=streamTracer)
 
         # Properties modified on ribbon
-        ribbon.Scalars = ['POINTS', self.plotRecipe.get('enum.color.variable')]
+        ribbon.Scalars = ['POINTS', self.plotRecipe.get('EnumColorVariable')]
 
         # show data in view
         ribbonDisplay = simple.Show(ribbon, self.dataObject.renderView)
@@ -216,7 +214,7 @@ class AMSPlot(object):
         self.dataObject.renderView.Update()
 
         # set scalar coloring
-        ColorBy(ribbonDisplay, ('POINTS', self.plotRecipe.get('enum.color.variable')))
+        ColorBy(ribbonDisplay, ('POINTS', self.plotRecipe.get('EnumColorVariable')))
 
         # Hide the scalar bar for this color map if no visible data is
         # colored by it.
@@ -229,7 +227,7 @@ class AMSPlot(object):
         ribbonDisplay.SetScalarBarVisibility(self.dataObject.renderView, True)
 
         # get color transfer function/color map for 'uds_0_scalar'
-        colorLUT = simple.GetColorTransferFunction(self.plotRecipe.get('enum.color.variable'))
+        colorLUT = simple.GetColorTransferFunction(self.plotRecipe.get('EnumColorVariable'))
 
         # Properties modified on ribbon
         ribbon.Width = 0.003
@@ -407,8 +405,18 @@ class AMSPlotRecipe(object):
     def __init__(self, plotDict):
         self.plotDict = plotDict
 
+    def getName(self):
+        return self.plotDict['CellPlotName']['value'][0]
+        
     def get(self, name):
         return self.plotDict[name]['value']
+
+    def printRecipe(self):
+        print "Recipe name: ", self.getName()
+
+        for k in self.plotDict.keys():
+            print "  ", k, ":    ", self.plotDict[k]['value']
+
         
 class AMSCookBook(object):
     """
@@ -417,12 +425,18 @@ class AMSCookBook(object):
     def __init__(self):
         self.index = dict()
 
-    def addRecipe(self, name, plotRecipe):
-        self.index[name] = plotRecipe
+    def addRecipe(self, plotRecipe):
+        self.index[plotRecipe.getName()] = plotRecipe
+
+#    def addRecipe(self, name, plotRecipe):
+#        self.index[name] = plotRecipe
 
     def getRecipe(self, name):
         return self.index[name]
-    
+
+    def printBook(self):
+        for k in self.index.keys():
+            self.index[k].printRecipe()
 
 
 

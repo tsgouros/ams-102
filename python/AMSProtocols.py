@@ -132,6 +132,7 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         self.profile = profile
 
         self.dataObjects = []
+        self.plotCookBook = AMSCookBook()
 
         self.toggle = True
         self.data0on = True
@@ -232,6 +233,19 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
 
         print("calling testbutton with: ")
         print(arg)
+
+        pr = AMSPlotRecipe(arg)
+        
+        self.plotCookBook.addRecipe(pr)
+
+        self.plotCookBook.printBook()
+
+        plot = AMSPlot(self.dataObjects[0], pr)
+
+        plot.draw()
+        
+        self.getApplication().InvokeEvent('UpdateEvent')
+
 
         return { "hello": 42.5, "bob": "paul" }
         
