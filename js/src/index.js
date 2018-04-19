@@ -96,10 +96,22 @@ const amsProtocols = {
         console.log("******* pressed tankgeometry *******");
       },
 
+      clearAll: () => {
+        session.call('amsprotocol.clear.all', [])
+          .then((result) => console.log('result' + result));
+        console.log("******* pressed clear all *******");
+      },
+
       changeSurface: (surfaceValue) => {
         session.call('amsprotocol.change.surface', [ surfaceValue ])
           .then((result) => console.log('result: ' + result));
         console.log("******* adjusted number of sides ********");
+      },
+
+      executePlot: (value) => {
+        session.call('amsprotocol.execute.plot', [ value ])
+          .then((result) => console.log('result: ' + result));
+        console.log("******* testbutton ------>", value);
       },
 
       testButton: (testValue) => {
@@ -171,7 +183,7 @@ class AMSControlPanel extends React.Component {
     console.log("returned value:", p);
     plotCatalog[p.CellPlotName.value[0]] = p;
     console.log("plotCatalog:", plotCatalog);
-    model.pvwClient.amsService.testButton(p);
+    model.pvwClient.amsService.executePlot(p);
   }
 
   returnCatalogState(p) {
@@ -298,6 +310,7 @@ class AMSControlPanel extends React.Component {
         <button onClick={() => model.pvwClient.amsService.drawLowRPM()}>low rpm</button>
         <button onClick={() => model.pvwClient.amsService.drawHighRPM()}>high rpm</button>
         <button onClick={() => model.pvwClient.amsService.showTankGeometry()}>tank</button>
+        <button onClick={() => model.pvwClient.amsService.clearAll()}>clear</button>
         </div>
         <div style={{display: 'table-cell'}}>
         <NumberSliderWidget value={surfaceValue}

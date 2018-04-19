@@ -131,8 +131,9 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         self.config = config
         self.profile = profile
 
-        self.dataObjects = []
+        self.dataObjects = AMSDataObjectCollection()
         self.plotCookBook = AMSCookBook()
+        self.currentPlot = AMSPlot(None, None)
 
         self.toggle = True
         self.data0on = True
@@ -164,14 +165,11 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
             else:
                 self.dataObjects[1].hide()
 
-    def addListener(self, dataChangedInstance):
-        self.dataListeners.append(dataChangedInstance)
-
     def getInput(self):
         return self.dataset
 
     def addObject(self, dataObject):
-        self.dataObjects.append(dataObject)
+        self.dataObjects.addObject(dataObject)
 
     @exportRPC("amsprotocol.draw.low.rpm")
     def draw100rpm(self):
@@ -228,11 +226,8 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
 
         return "******** executed changeSurface with: " + arg + " *******"
 
-    @exportRPC("amsprotocol.test.button")
-    def testButton(self, arg):
-
-        print("calling testbutton with: ")
-        print(arg)
+    @exportRPC("amsprotocol.execute.plot")
+    def executePlot(self, arg):
 
         pr = AMSPlotRecipe(arg)
         
@@ -240,15 +235,29 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
 
         self.plotCookBook.printBook()
 
-        plot = AMSPlot(self.dataObjects[0], pr)
+        self.currentPlot = self.dataObjects.plotData(self.dataObjects.keys()[0], pr)
 
-        plot.draw()
+        self.currentPlot.draw()
         
         self.getApplication().InvokeEvent('UpdateEvent')
 
 
-        return { "hello": 42.5, "bob": "paul" }
+    
+    @exportRPC("amsprotocol.test.button")
+    def testButton(self, arg):
+
+        print("calling testbutton with: ")
+        print(arg)
+
+        return "******** executed testButton with: " + str(arg) + " *******"
+
+    @exportRPC("amsprotocol.clear.all")
+    def clearAll(self):
+
+        self.currentPlot.clearAll()
+        self.getApplication().InvokeEvent('UpdateEvent')
         
- #       return "******** executed testButton with: " + str(arg) + " *******"
+#
+
 
     

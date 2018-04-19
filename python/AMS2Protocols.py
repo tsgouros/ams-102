@@ -127,6 +127,15 @@ class AMSPlot(object):
 
         simple.Render()
 
+    def clearFilters(self):
+        for f in simple.GetSources().values():
+            if f.GetProperty("Input") is not None:
+                simple.Delete(f)
+
+    def clearAll(self):
+        for f in simple.GetSources().values():
+            simple.Delete(f)
+            
             
     def makeContour(self):
 
@@ -281,6 +290,9 @@ class AMSDataObject(object):
         self.tankGeometryShown = False
         self.tankGeometryInit = False
 
+    def getName(self):
+        return self.name
+        
     def printDebug(self):
         if self.debug:
             # This retrieves the name of the calling function.
@@ -390,12 +402,38 @@ class AMSDataObjectCollection(object):
     """
     def __init__(self):
         self.index = dict()
+        self.shown = None
 
-    def addObject(self, name, dataObject):
-        self.index[name] = dataObject
+    def __getitem__(self, i):
+        if len(self.index) > i:
+            return self.index[self.index.keys()[i]]
+        else:
+            return None
+
+        
+    def addObject(self, dataObject):
+        self.index[dataObject.getName()] = dataObject
 
     def getObject(self, name):
         return self.index[name]
+
+    def getFirst(self):
+        if len(self.index) > 0:
+            return self.index[self.index.keys()[0]]
+        else:
+            return None
+
+    def keys(self):
+        return self.index.keys()
+
+    def getShown(self):
+        """
+        Returns the data object currently being shown in the view.
+        """
+        return self.shown
+
+    def plotData(self, name, recipe):
+        return AMSPlot(self.index[name], recipe)
 
         
 class AMSPlotRecipe(object):
@@ -452,11 +490,3 @@ rec4 = {u'enum.color.variable': {u'widgetType': u'enum', u'value': u'uds_0_scala
 caseFileL = '/Users/tomfool/tech/18/amgen/ams-102-AgileViz/EnSight/mat-viz-mofTFF-90L-9.1lpm-100rpm/mat-viz-mofTFF-90L-9.1lpm-100rpm.case'
 caseFileH = '/Users/tomfool/tech/18/amgen/ams-102-AgileViz/EnSight/mat-viz-mofTFF-90L-9.1lpm-250rpm/mat-viz-mofTFF-90L-9.1lpm-250rpm.case'
 
-def clearFilters():
-    for f in simple.GetSources().values():
-        if f.GetProperty("Input") is not None:
-            simple.Delete(f)
-
-def clearAll():
-    for f in simple.GetSources().values():
-        simple.Delete(f)    
