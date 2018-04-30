@@ -21,7 +21,7 @@ import ReactDOM from 'react-dom';
 
 import SmartConnect from 'wslink/src/SmartConnect';
 
-import PlotDialog from './PlotDialog';
+import AMSPlotDialog from './AMSPlotDialog';
 
 const config = { sessionURL: 'ws://localhost:1234/ws' };
 const smartConnect = SmartConnect.newInstance({ config });
@@ -39,41 +39,8 @@ class plotParams {
   }
 }
 
-// This will be an association of names and plotParam objects.
+// This will be an association of names and catalogSpec objects.
 const plotCatalog = {}
-
-function generateCatalogSpec() {
-  console.log("calling catalogSpec:", plotCatalog, Object.keys(plotCatalog));
-
-  if (Object.keys(plotCatalog).length === 0 &&
-      plotCatalog.constructor === Object) {
-    return [
-      {
-        name: "plotName",
-        widgetType: "enum",
-        vals: ["no plots stored"],
-        selected: "no plots stored",
-        dataType: "string",
-        id: "plotName",
-        help: "Select a plot by name."          
-      }
-    ]
-  } else {
-    return [
-      {
-        name: "plotName",
-        widgetType: "enum",
-        vals: () => { return Object.keys(plotCatalog); },
-        selected: "no plots",
-        dataType: "string",
-        id: "plotName",
-        help: "Select a plot by name."
-      }
-    ]
-  }
-}
-
-
 
 const amsProtocols = {
   amsService: (session) => {
@@ -136,7 +103,10 @@ smartConnect.onConnectionReady((connection) => {
                                      'VtkImageDelivery',
                                    ],
                                    amsProtocols);
+  // Create a vtk renderer.
   const renderer = VtkRenderer.newInstance({ client: model.pvwClient });
+
+  // Place it in the container set up for it.
   renderer.setContainer(divRenderer);
   // renderer.onImageReady(() => {
   //   console.log('image ready (for next command)');
@@ -176,7 +146,6 @@ class AMSControlPanel extends React.Component {
     this.updateSliderVal = this.updateSliderVal.bind(this);
     this.dialogSpec = this.dialogSpec.bind(this);
     this.returnDialogState = this.returnDialogState.bind(this);
-    this.props.updateCatalogSpec();
   }
 
   returnDialogState(p) {
@@ -184,6 +153,7 @@ class AMSControlPanel extends React.Component {
     plotCatalog[p.CellPlotName.value[0]] = p;
     console.log("plotCatalog:", plotCatalog);
     model.pvwClient.amsService.executePlot(p);
+    this.dialogSpec
   }
 
   returnCatalogState(p) {
@@ -205,7 +175,28 @@ class AMSControlPanel extends React.Component {
     model.pvwClient.amsService.changeSurface(e.target.value);
   }
 
-  catalogSpec() { return generateCatalogSpec(); }
+  catalogSpec() {
+    return [
+      {
+        name: "plotName",
+        widgetType: "enum",
+        vals: ["residence contour", "velocity vs. shear", "velocity streamline"],
+        selected: "residence contour",
+        dataType: "string",
+        id: "plotName",
+        help: "Select a plot by name."          
+      },
+      {
+        name: "data",
+        widgetType: "enum",
+        vals: ["100rpm", "250rpm"],
+        selected: "100rpm",
+        dataType: "string",
+        id: "dataSource",
+        help: "select a data source by name."
+      }
+    ]
+  }
   
   dialogSpec() {
     return [
@@ -301,9 +292,9 @@ class AMSControlPanel extends React.Component {
     return (
         <center>
         <div style={{width: '100%', display: 'table'}}>
-        <PlotDialog deliverDialogSpec={this.dialogSpec}
+        <AMSPlotDialog deliverDialogSpec={this.dialogSpec}
                     returnDialogResults={this.returnDialogState}/>        
-        <PlotDialog deliverDialogSpec={this.catalogSpec}
+        <AMSPlotDialog deliverDialogSpec={this.catalogSpec}
                     returnDialogResults={this.returnCatalogState}/>        
         <div style={{display: 'table-cell'}}>
         <button onClick={() => model.pvwClient.amsService.testButton(testVal)}>test</button>
@@ -336,16 +327,10 @@ smartConnect.connect();
 
 const testVal = {hello: 52.6};
 
-function ucs() {
-  console.log("is this how it works?");
-}
-
 function next() {
 //  console.log("hi there", plotCatalog);
-  ReactDOM.render(<AMSControlPanel updateCatalogSpec={ucs}/>,
+  ReactDOM.render(<AMSControlPanel />,
                   document.getElementById('root'));
-  // ReactDOM.render(<PlotDialog />,
-  //                 document.getElementById('preRoot'));
 };
 
 setInterval(next, 5000);
