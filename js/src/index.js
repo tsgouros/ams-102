@@ -7,7 +7,6 @@ import Spacer from 'paraviewweb/src/Component/Native/Spacer';
 import Composite from 'paraviewweb/src/Component/Native/Composite';
 import ReactAdapter from 'paraviewweb/src/Component/React/ReactAdapter';
 import WorkbenchController from 'paraviewweb/src/Component/React/WorkbenchController';
-import NumberSliderWidget from 'paraviewweb/src/React/Widgets/NumberSliderWidget';
 
 import { debounce } from 'paraviewweb/src/Common/Misc/Debounce';
 
@@ -21,7 +20,7 @@ import ReactDOM from 'react-dom';
 
 import SmartConnect from 'wslink/src/SmartConnect';
 
-import AMSPlotDialog from './AMSPlotDialog';
+import AMSControlPanel from './AMSControlPanel';
 
 const config = { sessionURL: 'ws://localhost:1234/ws' };
 const smartConnect = SmartConnect.newInstance({ config });
@@ -134,186 +133,6 @@ const divRoot = document.createElement('div');
 divRoot.id = "root";
 document.body.appendChild(divRoot);
 
-class AMSControlPanel extends React.Component {
-  constructor(props) {
-    super(props);
-    console.log("AMSControlPanel:", props);
-
-    this.state = {
-      plotType: "isosurface",
-      surfaceValue: 500
-    };
-    this.updateSliderVal = this.updateSliderVal.bind(this);
-    this.dialogSpec = this.dialogSpec.bind(this);
-    this.returnDialogState = this.returnDialogState.bind(this);
-  }
-
-  returnDialogState(p) {
-    console.log("returned value:", p);
-    plotCatalog[p.CellPlotName.value[0]] = p;
-    console.log("plotCatalog:", plotCatalog);
-    model.pvwClient.amsService.executePlot(p);
-    this.dialogSpec
-  }
-
-  returnCatalogState(p) {
-    console.log("returned catalog value:", p);
-  }
-  
-  updateSliderVal(e) {
-    // What changes, and what value?
-    const which = e.target.name;
-    const newVal = e.target.value;
-    const toUpdateSlider = {};
-    toUpdateSlider[which] = newVal;
-
-    // Update the new value in the display.
-    this.setState(toUpdateSlider);
-
-    console.log(typeof e.target.value);
-    // Communicate it to the server.
-    model.pvwClient.amsService.changeSurface(e.target.value);
-  }
-
-  catalogSpec() {
-    return [
-      {
-        name: "plotName",
-        widgetType: "enum",
-        vals: ["residence contour", "velocity vs. shear", "velocity streamline"],
-        selected: "residence contour",
-        dataType: "string",
-        id: "plotName",
-        help: "Select a plot by name."          
-      },
-      {
-        name: "data",
-        widgetType: "enum",
-        vals: ["100rpm", "250rpm"],
-        selected: "100rpm",
-        dataType: "string",
-        id: "dataSource",
-        help: "select a data source by name."
-      }
-    ]
-  }
-  
-  dialogSpec() {
-    return [
-      {
-        name: "plotName",
-        widgetType: "cell",
-        vals: [],
-        selected: ["plot name"],
-        id: "CellPlotName",
-        dataType: "string",
-        help: "Give this collection of plot parameters a name so you can use it again.",
-      },
-      {
-        name: "plotType",
-        widgetType: "enum",
-        vals: ["contour", "streamlines"],  // the list of possible values
-        selected: "contour",      // the current value
-        id: "EnumPlotType",      // just has to be unique in this list
-        dataType: "string",           // 'string' or 'int'
-        help: "Choose the type of plot to view.",
-      },
-      {
-        name: "contour variable",
-        widgetType: "enum",
-        vals: ["uds_0_scalar",
-               "pressure",
-               "axial_velocity",
-               "radial_velocity",
-               "tangential_velocity"
-              ],
-        selected: "uds_0_scalar",
-        id: "EnumContourVariable",
-        dataType: "string",
-        help: "Which value to contour?",
-      },
-      {
-        name: "contour value",
-        widgetType: "cell",
-        vals: [0.0, 800.0],
-        selected: [400.0],
-        id: "DoubleContourValue",
-        dataType: "double",
-        help: "Select a contour value",
-      },
-      {
-        name: "color variable",
-        widgetType: "enum",
-        vals: ["pressure",
-               "uds_0_scalar",
-               "axial_velocity",
-               "radial_velocity",
-               "tangential_velocity"
-              ],
-        selected: "pressure",
-        id: "EnumColorVariable",
-        dataType: "string",
-        help: "Which variable to color the contour or streamline?",
-      },
-      // {
-      //   name: "contour value",
-      //   widgetType: "slider",
-      //   vals: [0.0, 800.0],
-      //   selected: [400.0],
-      //   id: "DoubleContourValue",
-      //   dataType: "double",
-      //   help: "Select a contour value",
-      // },
-      // {
-      //   name: "some other value",
-      //   widgetType: "cell",
-      //   vals: [0, 1],
-      //   selected: [0.5],
-      //   id: "CellValue",
-      //   dataType: "double",
-      //   help: "A little help text...",
-      // },
-      // {
-      //   name: "still another value",
-      //   widgetType: "cell",
-      //   vals: [0, 10],
-      //   selected: [5],
-      //   id: "CellValue2",
-      //   dataType: "int",
-      //   help: "A little help text...",
-      // },
-    ];
-  }
-    
-  render() {
-    const [surfaceValue] = [this.state.surfaceValue];
-    //console.log("in render: ", plotCatalog, this.catalogSpec);
-    
-    return (
-        <center>
-        <div style={{width: '100%', display: 'table'}}>
-        <AMSPlotDialog deliverDialogSpec={this.dialogSpec}
-                    returnDialogResults={this.returnDialogState}/>        
-        <AMSPlotDialog deliverDialogSpec={this.catalogSpec}
-                    returnDialogResults={this.returnCatalogState}/>        
-        <div style={{display: 'table-cell'}}>
-        <button onClick={() => model.pvwClient.amsService.testButton(testVal)}>test</button>
-        <button onClick={() => model.pvwClient.amsService.drawLowRPM()}>low rpm</button>
-        <button onClick={() => model.pvwClient.amsService.drawHighRPM()}>high rpm</button>
-        <button onClick={() => model.pvwClient.amsService.showTankGeometry()}>tank</button>
-        <button onClick={() => model.pvwClient.amsService.clearAll()}>clear</button>
-        </div>
-        <div style={{display: 'table-cell'}}>
-        <NumberSliderWidget value={surfaceValue}
-            max="1000" min="10" onChange={this.updateSliderVal} name="surfaceValue"/>
-        </div>
-        </div>
-
-        </center>
-    );
-  }
-}
-
 const divRenderer = document.createElement('div');
 document.body.appendChild(divRenderer);
 
@@ -329,7 +148,7 @@ const testVal = {hello: 52.6};
 
 function next() {
 //  console.log("hi there", plotCatalog);
-  ReactDOM.render(<AMSControlPanel />,
+  ReactDOM.render(<AMSControlPanel model={model}/>,
                   document.getElementById('root'));
 };
 

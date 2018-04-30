@@ -6,7 +6,7 @@ import Modal from './Modal';
 
 import PropertyPanel from 'paraviewweb/src/React/Properties/PropertyPanel';
 
-class PlotDialog extends React.Component {
+class AMSPlotDialog extends React.Component {
   constructor(props) {
     super(props);
 
@@ -141,7 +141,7 @@ class PlotDialog extends React.Component {
     //console.log("rendering:::", this.properties, this.dialogResults);
 
     return (
-        <div className="PlotDialog" style={{display: 'table-cell'}}>
+        <div className="AMSPlotDialog" style={{display: 'table-cell'}}>
         <button onClick={this.toggleModal}>
           Open the Plot Dialog
         </button>
@@ -157,5 +157,5 @@ class PlotDialog extends React.Component {
   }
 }
 
-export default PlotDialog;
+export default AMSPlotDialog;
 
