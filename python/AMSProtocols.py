@@ -203,7 +203,6 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
 
         self.dataObjects[0].toggleTankGeometry()
         self.getApplication().InvokeEvent('UpdateEvent')
-        print("invoking update?")
         
 
     @exportRPC("amsprotocol.heartbeat.update")
@@ -249,7 +248,9 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         print("calling testbutton with: ")
         print(arg)
 
-        return "******** executed testButton with: " + str(arg) + " *******"
+        arg['hello'] = 342.4
+        arg['message'] = "******** executed testButton with: " + str(arg) + " *******"
+        return arg
 
     @exportRPC("amsprotocol.clear.all")
     def clearAll(self):
