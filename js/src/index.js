@@ -38,8 +38,31 @@ class plotParams {
   }
 }
 
-// This will be an association of names and catalogSpec objects.
-const plotCatalog = {}
+// This will be an association of names and descriptions of visualizations.
+//var vizCatalog = {emptyPlot: {plot: "whatever"}};
+var vizCatalog = {
+  "plot name": {
+    EnumPlotType:  "contour",
+    EnumContourVariable:  "uds_0_scalar",
+    DoubleContourValue:  [400],
+    EnumColorVariable: "pressure",
+    CellPlotName: ["plot name"],
+  }   
+};
+
+// A list of data names, meaningful over on the pvpython side, and
+// descriptive data about each data source 
+var dataCatalog = {
+  m100rpm: {
+    fileName: "100rpm.encas",
+  },
+  m250rpm: {
+    fileName: "250rpm.encas",
+  },
+  m50rpm: {
+    fileName: "50rpm.encas",
+  }
+};
 
 const amsProtocols = {
   amsService: (session) => {
@@ -77,12 +100,15 @@ const amsProtocols = {
       executePlot: (value) => {
         session.call('amsprotocol.execute.plot', [ value ])
           .then((result) => console.log('result: ' + result));
-        console.log("******* testbutton ------>", value);
+        console.log("******* execute plot ------>", value, "<<<");
       },
 
       testButton: (testValue) => {
         session.call('amsprotocol.test.button', [ testValue ])
-          .then((result) => console.log('result: ' + result.hello));
+          .then((result) => {
+            console.log('result: ' + result.hello);
+            vizCatalog = result;
+          });
         console.log("******* testbutton ------>", testValue);
       },
 
@@ -118,6 +144,10 @@ smartConnect.onConnectionReady((connection) => {
   connectionReady = true;
 });
 
+function onDrawCommand(drawCommand) {
+  console.log("onDrawCommand is to execute:", drawCommand);
+};
+
 const divTitle = document.createElement('div');
 document.body.appendChild(divTitle);
 divTitle.innerHTML = '<h1>&nbsp;&nbsp;&nbsp;Hello Amgen World!</h1>';
@@ -144,15 +174,16 @@ divRenderer.style.zIndex = '10';
 
 smartConnect.connect();
 
-const testVal = {hello: 52.6};
-
 function next() {
-//  console.log("hi there", plotCatalog);
-  ReactDOM.render(<AMSControlPanel model={model}/>,
+  //console.log("hi there", vizCatalog);
+  ReactDOM.render(<AMSControlPanel model={model}
+                  vizCatalog={vizCatalog}
+                  dataCatalog={dataCatalog}
+                  executeDrawCommand={onDrawCommand} />,
                   document.getElementById('root'));
 };
 
-setInterval(next, 5000);
+//setInterval(next, 5000);
 setInterval(function() {
   if (connectionReady) {
     model.pvwClient.amsService.heartbeatUpdate();

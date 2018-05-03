@@ -6,6 +6,19 @@ import Modal from './Modal';
 
 import PropertyPanel from 'paraviewweb/src/React/Properties/PropertyPanel';
 
+// This class presents the user with a dialog for doing something or other.
+// The inputs are a spec for the dialog -- a list of what kinds of widgets
+// should ask what kinds of questions -- and a function to call to deliver
+// the results to the parent.
+//
+// Input data includes: dialogSpec
+//
+// State includes: whether the dialog is open or closed, the
+// dialogDescription (which is just a lightly-processed version of the spec,
+// perhaps with conditionals selected).
+//
+// Output data: An updated dialogSpec, with the "selected" fields filled in.
+
 class AMSPlotDialog extends React.Component {
   constructor(props) {
     super(props);
@@ -16,21 +29,24 @@ class AMSPlotDialog extends React.Component {
     // direction.
     // console.log("props:", props);
 
-    // This refers to whether the dialog is being displayed or not.
-    // See toggleModal() below.
-    this.state = { isOpen: false };
+    this.state = {
+      // This refers to whether the dialog is being displayed or not.
+      // See toggleModal() below.
+      isOpen: false,
 
-    // Get the data from the parent.  This will be a description of what
-    // the dialog should look like, a collection of objects, each of which
-    // has a name to display, a type of widget, the values it can take, and
-    // the value that is selected.
-    this.dialogDescription = this.props.deliverDialogSpec();
+      // Get the data from the parent.  This will be a description of what
+      // the dialog should look like, a collection of objects, each of which
+      // has a name to display, a type of widget, the values it can take, and
+      // the value that is selected.
+      dialogDescription: this.props.deliverDialogSpec,
+
+    };
 
     // This will hold the results of the dialog session.  We have to
     // keep the widget type because there is something odd about the
     // handling of values for the enum type.
     this.dialogResults =
-      this.dialogDescription.reduce(function(dialogObj,dialogItem) {
+      this.state.dialogDescription.reduce(function(dialogObj,dialogItem) {
         dialogObj[dialogItem.id] = {
           value: dialogItem.selected,
           widgetType: dialogItem.widgetType,
@@ -38,69 +54,14 @@ class AMSPlotDialog extends React.Component {
         return dialogObj;
       }, {});
 
+    console.log("dialogResults:", this.dialogResults);
     //console.log("dialogDescription:", this.dialogDescription);
 
     // Convert the dialog description into a list of actionable pieces, as
     // they are expected by the PropertyPanel widget.  This is essentially
     // just format conversion, plus defining the onChange() function.
-    this.dialogList = 
-      this.dialogDescription.reduce(function(dialogList, dialogItem) {
+    //this.dialogList = [];
 
-        // The domains differ according to the widget type.
-        let itemDomain = {};
-        if (dialogItem.widgetType == "enum") {
-          itemDomain = dialogItem.vals.reduce(function(result, item) {
-            result[item] = item; return result;}, {});
-        } else if (dialogItem.widgetType == "slider") {
-          itemDomain = { min: dialogItem.vals[0], max: dialogItem.vals[1] };
-        } else if (dialogItem.widgetType == "cell") {
-          if (dialogItem.dataType != "string") {
-            itemDomain = { range: [{ min: dialogItem.vals[0],
-                                     max: dialogItem.vals[1],
-                                     force: true,
-                                   }]
-                         };
-          } else {
-            itemDomain = { range: [{ force: false }] };
-          }
-        }
-        // Add an item to the dialog list, this is the format expected
-        // by the PropPanel widget.  Note that the id vaues must be
-        // unique to each item.
-        dialogList.push({
-          data: { value: dialogItem.selected, id: dialogItem.id },
-          name: dialogItem.name,
-          show: () => true,
-          widgetType: dialogItem.widgetType,
-          ui: {
-            propType: dialogItem.widgetType,
-            label: dialogItem.name,
-            domain: itemDomain,
-            type: dialogItem.dataType,
-            layout: '1',
-            help: dialogItem.help,
-            componentLabels: [''],
-          },
-          onChange: function onChange(data) {
-            console.log("onChange:", JSON.stringify(data));
-            if (this.dialogResults[data.id].widgetType == "enum") {
-              this.dialogResults[data.id].value = data.value[0];
-              data.value = this.dialogResults[data.id].value;
-            } else {
-              this.dialogResults[data.id].value = data.value;
-            }
-            this.render();
-          },
-        });
-        return dialogList;
-      }, [] );
-
-    // Set the this pointer to make sure all the onChange functions
-    // see the correct render() method and can find the dialogResults
-    // object.
-    for (var i = 0; i < this.dialogList.length; i++) {
-      this.dialogList[i].onChange = this.dialogList[i].onChange.bind(this);
-    }
     
     //console.log("dialogList:", this.dialogList);
     
@@ -108,7 +69,7 @@ class AMSPlotDialog extends React.Component {
       input: [
         {
           title: 'Edit a Visualization',
-          contents: this.dialogList,
+          contents: this.generateDialogList(props.deliverDialogSpec),
         },
       ],
       // setting this change handler overrides all individual component
@@ -121,8 +82,82 @@ class AMSPlotDialog extends React.Component {
     };
 
     // This has the effect of binding the 'this' pointer to the parent class,
-    // React.Component, which has the setState() method used in toggleModal.
     this.toggleModal = this.toggleModal.bind(this);
+    this.generateDialogList = this.generateDialogList.bind(this);
+
+    // Do the same for all the onChange functions so they see the
+    // correct render() method and can find the dialogResults object.
+    for (var i = 0; i < this.properties.input[0].contents.length; i++) {
+      console.log("contents[",i,"]:", this.properties.input[0].contents[i]);
+      this.properties.input[0].contents[i].onChange =
+        this.properties.input[0].contents[i].onChange.bind(this);
+    }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    console.log("inside componentWillReceiveProps:", nextProps);
+
+    this.properties.input[0].contents =
+      this.generateDialogList(nextProps.deliverDialogSpec);
+
+    this.setState({dialogDescription: nextProps.deliverDialogSpec});
+    console.log("still there", this.properties.input[0]);
+    
+  }
+  
+  generateDialogList(dialogSpec) {
+
+    return dialogSpec.reduce(function(dL, dialogItem) {
+
+      // The domains differ according to the widget type.
+      let itemDomain = {};
+      if (dialogItem.widgetType == "enum") {
+        itemDomain = dialogItem.vals.reduce(function(result, item) {
+          result[item] = item; return result;}, {});
+      } else if (dialogItem.widgetType == "slider") {
+        itemDomain = { min: dialogItem.vals[0], max: dialogItem.vals[1] };
+      } else if (dialogItem.widgetType == "cell") {
+        if (dialogItem.dataType != "string") {
+          itemDomain = { range: [{ min: dialogItem.vals[0],
+                                   max: dialogItem.vals[1],
+                                   force: true,
+                                 }]
+                       };
+        } else {
+          itemDomain = { range: [{ force: false }] };
+        }
+      }
+
+      // Add an item to the dialog list, this is the format expected
+      // by the PropPanel widget.  Note that the id vaues must be
+      // unique to each item.
+      dL.push({
+        data: { value: dialogItem.selected, id: dialogItem.id },
+        name: dialogItem.name,
+        show: () => true,
+        widgetType: dialogItem.widgetType,
+        ui: {
+          propType: dialogItem.widgetType,
+          label: dialogItem.name,
+          domain: itemDomain,
+          type: dialogItem.dataType,
+          layout: '1',
+          help: dialogItem.help,
+          componentLabels: [''],
+        },
+        onChange: function onChange(data) {
+          console.log("onChange:", JSON.stringify(data), this.dialogResults, this);
+          if (this.dialogResults[data.id].widgetType == "enum") {
+            this.dialogResults[data.id].value = data.value[0];
+            data.value = this.dialogResults[data.id].value;
+          } else {
+            this.dialogResults[data.id].value = data.value;
+          }
+          this.render();
+        },
+      });
+      return dL;
+    }, [] );
   }
 
   // Called to open the dialog, and to close it.
@@ -135,15 +170,37 @@ class AMSPlotDialog extends React.Component {
       isOpen: !this.state.isOpen
     });
   }
-    
+
+
+  // static getDerivedStateFromProps(nextProps, prevState) {
+
+  //   console.log("getDerivedStateFromProps", nextProps.buttonLabel,
+  //               nextProps, prevState,
+  //               (prevState.dialogDescription &&
+  //                (nextProps.deliverDialogSpec()[0].vals !=
+  //                 prevState.dialogDescription[0].vals)));
+
+  //   if (prevState.dialogDescription &&
+  //       (nextProps.deliverDialogSpec()[0].vals !=
+  //        prevState.dialogDescription[0].vals)) {
+
+  //     this.dialogList = this.generateDialogList(nextProps.deliverDialogSpec());
+  //     return {
+  //       dialogDescription: nextProps.deliverDialogSpec(),
+  //     };
+  //   } else {
+  //     return null;
+  //   };
+  // }
+  
   render() {
 
-    //console.log("rendering:::", this.properties, this.dialogResults);
+    console.log("AMSPlotDialog rendering", this.props.buttonLabel, this.state);
 
     return (
         <div className="AMSPlotDialog" style={{display: 'table-cell'}}>
         <button onClick={this.toggleModal}>
-          Open the Plot Dialog
+        {this.props.buttonLabel}
         </button>
 
         <Modal show={this.state.isOpen}
