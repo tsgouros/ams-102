@@ -22,24 +22,36 @@ import SmartConnect from 'wslink/src/SmartConnect';
 
 import AMSControlPanel from './AMSControlPanel';
 
+// Create a SmartConnect object.
 const config = { sessionURL: 'ws://localhost:1234/ws' };
 const smartConnect = SmartConnect.newInstance({ config });
 
 const model = {};
 let connectionReady = false;
 
-// This is meant to hold all the variable aspects of a plot *except* the data
-// source (e.g. file name, whatever).  The point is to be able to apply this
-// visualization to whatever data is in the catalog.
-class plotParams {
-  constructor(plotType, variable) {
-    this.plotType = plotType;
-    this.variable = variable;
+// To create a visualization, you need a recipe (what kind of plot, what
+// variables, what colors, etc) and some data to which it is to be applied.
+// We will proceed by creating a cookbook of such recipes over here on the
+// client side and a catalog of available data over there on the server.
+// (It might eventually be that the cookbook is seeded from a server-side
+// cache, but during a session, the authoritative version is on the client.)
+//
+// A command to draw something contains a recipe and a data source.  The
+// recipe, since it is defined on the client, is entirely contained in the
+// draw command, while the data source is only named, with a reference to
+// the list kept over on the server.
+class drawCommand {
+  constructor(drawRecipe, dataName) {
+    // This will be a copy of an element from the vizCatalog.
+    this.drawRecipe = drawRecipe;  
+    this.dataName = dataName;
   }
 }
 
-// This will be an association of names and descriptions of visualizations.
-//var vizCatalog = {emptyPlot: {plot: "whatever"}};
+// This is the visualization cookbook, a collection of visualization recipes
+// that can be applied to the data sources.  It is a an association of names
+// and descriptions of visualizations.  This is the authoritative copy,
+// though there is (probably) also a copy on the server.
 var vizCatalog = {
   "plot name": {
     EnumPlotType:  "contour",
@@ -50,8 +62,8 @@ var vizCatalog = {
   }   
 };
 
-// A list of data names, meaningful over on the pvpython side, and
-// descriptive data about each data source 
+// A list of data names and some descriptive information about each data
+// source.  The authoritative copy is over on the server side.
 var dataCatalog = {
   m100rpm: {
     fileName: "100rpm.encas",
@@ -64,6 +76,15 @@ var dataCatalog = {
   }
 };
 
+// This is the collection of RPC functions supported by the pvpython server.
+// They are fed to the smartConnect function and returned as part of the
+// pvwClient object, which is how they can be accessed henceforward.
+//
+// The 'session.call' method references a string that must appear verbatim
+// on the server side.  Note that capital letters are NOT permitted, per
+// some quirk in the wslink implementation.  There seems to be no limitation
+// on the data types that can be passed.  JS objects wind up as Python dicts
+// over there, for example.
 const amsProtocols = {
   amsService: (session) => {
     return {
@@ -119,7 +140,11 @@ const amsProtocols = {
   },
 };
 
+// Establish where the SmartConnect object will be attached to the graphical
+// display when it is created.
 smartConnect.onConnectionReady((connection) => {
+  // Attach the client to the global 'model' object so it can be referenced
+  // elsewhere.
   model.pvwClient =
     ParaViewWebClient.createClient(connection,
                                    [
@@ -183,7 +208,13 @@ function next() {
                   document.getElementById('root'));
 };
 
-//setInterval(next, 5000);
+// This may not be necessary, but for some configurations making sure to
+// re-render every now and then, need it or not, is a good idea.  Test to
+// find out.
+// setInterval(next, 5000);
+
+// This function's purpose is to make the visualization canvas update when a
+// parameter has been changed or the visualization changes.
 setInterval(function() {
   if (connectionReady) {
     model.pvwClient.amsService.heartbeatUpdate();
@@ -192,33 +223,18 @@ setInterval(function() {
 
 next();
 
-// The array list should only contain the names that belong to that directory:
-// https://github.com/Kitware/paraviewweb/tree/master/src/IO/WebSocket/ParaViewWebClient
-
-// Then your custom protocol should looks like:
-// https://github.com/Kitware/paraviewweb/blob/master/src/IO/WebSocket/ParaViewWebClient/ProxyManager.js
-
-// Except that you will need to nest it inside an object like:
-
-// {
-//   CustomProtocol1: [...content of the previous example...],
-//   CustomProtocol2: [...content of the previous example...],
-// }
-
-// Then to use it you will do:
-
-// client.CustomProtocol1.availableSources().then(...
-
-// You can find a live example of its usage here:
-// https://github.com/Kitware/divvy/blob/master/Sources/client.js#L27-L65
-
 // TODO:
 //
-// - The method of invoking the protocols is not ideal, so let's try
-//   the above.
+// - Hook up plot command and plotting apparatus.
+//
+// - Get plot possibilities from server (data catalog, plot varieties,
+// - variables that can be displayed, etc.)
+//
+// - Move renderer down a level so that it's all inside a single React
+// - component that encompasses the canvas and the draw dialog.
 //
 // - Can we put a second render window in place?
 //
-// - Can we control the rotation and view?
+// - Can we control the rotation and view of the second window from the first?
 //
 //

@@ -27,7 +27,6 @@ class AMSPlotDialog extends React.Component {
     // the deliverDialogSpecs object, bringing data from our parent, and
     // the returnDialogResults object, for sending it back the other
     // direction.
-    // console.log("props:", props);
 
     this.state = {
       // This refers to whether the dialog is being displayed or not.
@@ -54,7 +53,7 @@ class AMSPlotDialog extends React.Component {
         return dialogObj;
       }, {});
 
-    console.log("dialogResults:", this.dialogResults);
+    //console.log("dialogResults:", this.dialogResults);
     //console.log("dialogDescription:", this.dialogDescription);
 
     // Convert the dialog description into a list of actionable pieces, as
@@ -88,21 +87,18 @@ class AMSPlotDialog extends React.Component {
     // Do the same for all the onChange functions so they see the
     // correct render() method and can find the dialogResults object.
     for (var i = 0; i < this.properties.input[0].contents.length; i++) {
-      console.log("contents[",i,"]:", this.properties.input[0].contents[i]);
+      //console.log("contents[",i,"]:", this.properties.input[0].contents[i]);
       this.properties.input[0].contents[i].onChange =
         this.properties.input[0].contents[i].onChange.bind(this);
     }
   }
 
   componentWillReceiveProps(nextProps) {
-    console.log("inside componentWillReceiveProps:", nextProps);
 
     this.properties.input[0].contents =
       this.generateDialogList(nextProps.deliverDialogSpec);
 
     this.setState({dialogDescription: nextProps.deliverDialogSpec});
-    console.log("still there", this.properties.input[0]);
-    
   }
   
   generateDialogList(dialogSpec) {
@@ -171,31 +167,9 @@ class AMSPlotDialog extends React.Component {
     });
   }
 
-
-  // static getDerivedStateFromProps(nextProps, prevState) {
-
-  //   console.log("getDerivedStateFromProps", nextProps.buttonLabel,
-  //               nextProps, prevState,
-  //               (prevState.dialogDescription &&
-  //                (nextProps.deliverDialogSpec()[0].vals !=
-  //                 prevState.dialogDescription[0].vals)));
-
-  //   if (prevState.dialogDescription &&
-  //       (nextProps.deliverDialogSpec()[0].vals !=
-  //        prevState.dialogDescription[0].vals)) {
-
-  //     this.dialogList = this.generateDialogList(nextProps.deliverDialogSpec());
-  //     return {
-  //       dialogDescription: nextProps.deliverDialogSpec(),
-  //     };
-  //   } else {
-  //     return null;
-  //   };
-  // }
-  
   render() {
 
-    console.log("AMSPlotDialog rendering", this.props.buttonLabel, this.state);
+    //console.log("AMSPlotDialog rendering", this.props.buttonLabel, this.state);
 
     return (
         <div className="AMSPlotDialog" style={{display: 'table-cell'}}>
