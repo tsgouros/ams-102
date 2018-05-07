@@ -411,8 +411,8 @@ class AMSDataObjectCollection(object):
             return None
 
         
-    def addObject(self, dataObject):
-        self.index[dataObject.getName()] = dataObject
+    def addObject(self, name, dataObject):
+        self.index[name] = dataObject
 
     def getObject(self, name):
         return self.index[name]

@@ -188,7 +188,7 @@ class AMSServer(pv_wslink.PVServerProtocol):
         simple.GetRenderView().Background2 = [0,0,0]
 
         if self.dataConfig:
-            amstest.initializeData( self.dataConfig["files"] )
+            amstest.initializeData( self.dataConfig["dataCatalog"] )
         else:
             amstest.initializeData( ["/Users/tomfool/tech/18/amgen/ams-102-AgileViz/EnSight/mat-viz-mofTFF-90L-9.1lpm-100rpm/mat-viz-mofTFF-90L-9.1lpm-100rpm.case", "/Users/tomfool/tech/18/amgen/ams-102-AgileViz/EnSight/mat-viz-mofTFF-90L-9.1lpm-250rpm/mat-viz-mofTFF-90L-9.1lpm-250rpm.case" ])
 

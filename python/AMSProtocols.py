@@ -149,14 +149,14 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
             functionName = traceback.extract_stack(None, 2)[0][2]
             print("calling " + functionName + " for " + self.name)
 
-    def initializeData(self, dataFileNames):
+    def initializeData(self, inputDataCatalog):
         """
-        Initialize data from a list of data files.  Show the first one, hide
+        Initialize data from the data catalog.  Show the first one, hide
         the rest.
         """
         i = 0
-        for dataFile in dataFileNames:
-            self.addObject(AMSDataObject(dataFile))
+        for entry in inputDataCatalog.keys():
+            self.addObject(entry, AMSDataObject(inputDataCatalog[entry]["fileName"]))
 
             if i == 0:
                 self.dataObjects[0].show()
@@ -168,8 +168,8 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
     def getInput(self):
         return self.dataset
 
-    def addObject(self, dataObject):
-        self.dataObjects.addObject(dataObject)
+    def addObject(self, name, dataObject):
+        self.dataObjects.addObject(name, dataObject)
 
     @exportRPC("amsprotocol.draw.low.rpm")
     def draw100rpm(self):
