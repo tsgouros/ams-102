@@ -261,13 +261,13 @@ class AMSDataObject(object):
     """
     Contains a data file name and some descriptive material about it.
     """
-    def __init__(self, dataFile):
+    def __init__(self, dataCatalogEntry):
 
-        self.name = dataFile
         self.debug = True
         
-        self.dataFile = dataFile
-
+        self.dataFile = dataCatalogEntry["fileName"]
+        self.description = dataCatalogEntry["description"]
+        
         self.renderView = simple.GetActiveViewOrCreate('RenderView')
 
         # create a new 'EnSight Reader'
@@ -275,7 +275,11 @@ class AMSDataObject(object):
 
         # show data in view
         self.caseDataDisplay = simple.Show(self.caseData, self.renderView)
-        # trace defaults for the display properties.
+
+        # Get variables and range data from the newly-opened file.
+        self.variables = {}  #***************************TBD
+
+        # Set some defaults for the display properties.
         self.caseDataDisplay.Representation = 'Surface'
 
         # show color bar/color legend
@@ -291,14 +295,14 @@ class AMSDataObject(object):
         self.tankGeometryInit = False
 
     def getName(self):
-        return self.name
+        return self.dataFile
         
     def printDebug(self):
         if self.debug:
             # This retrieves the name of the calling function.
             # 0:filename, 1:line number, 2:function, 3:calling string
             functionName = traceback.extract_stack(None, 2)[0][2]
-            print("calling " + functionName + " for " + self.name)
+            print("calling " + functionName + " for " + self.dataFile)
 
     def getData(self):
         return self.caseData
@@ -306,6 +310,15 @@ class AMSDataObject(object):
     def getDataDisplay(self):
         return self.caseDataDisplay
 
+    def getDescription(self):
+        return self.description
+
+    def getDataFile(self):
+        return self.dataFile
+    
+    def getVariables(self):
+        return self.variables
+    
     def setIsoSurfaces(self, isoSurfaces):
         self.isoSurfaces = isoSurfaces
 
@@ -405,10 +418,13 @@ class AMSDataObjectCollection(object):
         self.shown = None
 
     def __getitem__(self, i):
-        if len(self.index) > i:
-            return self.index[self.index.keys()[i]]
+        if isinstance(i, (int, long)):
+            if len(self.index) > i:
+                return self.index[self.index.keys()[i]]
+            else:
+                return None
         else:
-            return None
+            return self.index[i]
 
         
     def addObject(self, name, dataObject):

@@ -253,6 +253,7 @@ class AMSControlPanel extends React.Component {
                        returnDialogResults={this.returnDrawCommand}/>        
         <div style={{display: 'table-cell'}}>
         <button onClick={() => this.props.model.pvwClient.amsService.testButton(testy)}>test</button>
+        <button onClick={() => this.props.model.pvwClient.amsService.getDataCatalog()}>get data</button>
         <button onClick={() => this.props.model.pvwClient.amsService.drawLowRPM()}>low rpm</button>
         <button onClick={() => this.props.model.pvwClient.amsService.drawHighRPM()}>high rpm</button>
         <button onClick={() => this.props.model.pvwClient.amsService.showTankGeometry()}>tank</button>

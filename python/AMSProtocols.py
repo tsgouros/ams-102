@@ -131,6 +131,11 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         self.config = config
         self.profile = profile
 
+        # This is the list of catalog names, file names, what's in
+        # them, and so on.
+        self.dataCatalog = {}
+
+        
         self.dataObjects = AMSDataObjectCollection()
         self.plotCookBook = AMSCookBook()
         self.currentPlot = AMSPlot(None, None)
@@ -156,7 +161,7 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         """
         i = 0
         for entry in inputDataCatalog.keys():
-            self.addObject(entry, AMSDataObject(inputDataCatalog[entry]["fileName"]))
+            self.addObject(entry, AMSDataObject(inputDataCatalog[entry]))
 
             if i == 0:
                 self.dataObjects[0].show()
@@ -171,6 +176,32 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
     def addObject(self, name, dataObject):
         self.dataObjects.addObject(name, dataObject)
 
+
+    @exportRPC("amsprotocol.get.data.catalog")
+    def getDataCatalog(self):
+        """
+        Returns the data catalog to the client.  Also reviews the data as
+        it passes through to get the variable names and ranges.
+        """
+        # The data catalog on the client isn't exactly the same as the
+        # data catalog over here, so we have to build an 'ad hoc' catalog
+        # to those specs.
+        adHocCatalog = dict()
+
+        # Loop through the data entries.
+        for key in self.dataObjects.keys():
+            adHocCatalog[key] = {
+                "fileName": self.dataObjects[key].getDataFile(),
+                "description": self.dataObjects[key].getDescription(),
+                "variables": self.dataObjects[key].getVariables()
+            }
+
+            # Gather the variable names and ranges.
+            for variable in self.dataObjects[key].caseData.PointData:
+                adHocCatalog[key]["variables"][variable.GetName()] = variable.GetRange(-1)
+            
+        return adHocCatalog
+        
     @exportRPC("amsprotocol.draw.low.rpm")
     def draw100rpm(self):
 

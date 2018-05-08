@@ -96,25 +96,25 @@ const amsProtocols = {
 
       drawHighRPM: () => {
         session.call('amsprotocol.draw.high.rpm', [])
-          .then((result) => console.log('result: ' + result));
+          .then((result) => console.log('result: ', result));
         console.log("******* pressed high rpm *******");
       },
 
       showTankGeometry: () => {
         session.call('amsprotocol.show.tank.geometry', [])
-          .then((result) => console.log('result' + result));
+          .then((result) => console.log('result', result));
         console.log("******* pressed tankgeometry *******");
       },
 
       clearAll: () => {
         session.call('amsprotocol.clear.all', [])
-          .then((result) => console.log('result' + result));
+          .then((result) => console.log('result', result));
         console.log("******* pressed clear all *******");
       },
 
       changeSurface: (surfaceValue) => {
         session.call('amsprotocol.change.surface', [ surfaceValue ])
-          .then((result) => console.log('result: ' + result));
+          .then((result) => console.log('result: ', result));
         console.log("******* adjusted number of sides ********");
       },
 
@@ -124,10 +124,19 @@ const amsProtocols = {
         console.log("******* execute plot ------>", value, "<<<");
       },
 
+      getDataCatalog: () => {
+        session.call('amsprotocol.get.data.catalog', [])
+          .then((result) => {
+            console.log('catalog result: ', result);
+            dataCatalog = result;
+          });
+        console.log("******* get data catalog ------<<<");
+      },
+
       testButton: (testValue) => {
         session.call('amsprotocol.test.button', [ testValue ])
           .then((result) => {
-            console.log('result: ' + result.hello);
+            console.log('result: ', result.hello);
             vizCatalog = result;
           });
         console.log("******* testbutton ------>", testValue);
