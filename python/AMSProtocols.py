@@ -198,7 +198,9 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
 
             # Gather the variable names and ranges.
             for variable in self.dataObjects[key].caseData.PointData:
-                adHocCatalog[key]["variables"][variable.GetName()] = variable.GetRange(-1)
+                adHocCatalog[key]["variables"][variable.GetName()] = {
+                    "range": variable.GetRange(-1),
+                    "components": variable.GetNumberOfComponents() }
             
         return adHocCatalog
         
