@@ -1,6 +1,20 @@
 {
-  "files": [
-    "/Users/tomfool/tech/18/amgen/ams-102-AgileViz/EnSight/mat-viz-mofTFF-90L-9.1lpm-100rpm/mat-viz-mofTFF-90L-9.1lpm-100rpm.case",
-    "/Users/tomfool/tech/18/amgen/ams-102-AgileViz/EnSight/mat-viz-mofTFF-90L-9.1lpm-250rpm/mat-viz-mofTFF-90L-9.1lpm-250rpm.case"
-  ]
+  "dataCatalog": {
+  
+    "m100rpm": {
+      "fileName": "/Users/tomfool/tech/18/amgen/ams-102-AgileViz/EnSight/mat-viz-mofTFF-90L-9.1lpm-100rpm/mat-viz-mofTFF-90L-9.1lpm-100rpm.case",
+      "description": "One hundred RPM data from some funny shaped vessel.",
+      "variables": {
+        "pressure": {
+          "range": [0, 50.0],
+          "units": "bars"
+        }
+      }
+    },
+    "m250rpm": {
+      "fileName": "/Users/tomfool/tech/18/amgen/ams-102-AgileViz/EnSight/mat-viz-mofTFF-90L-9.1lpm-250rpm/mat-viz-mofTFF-90L-9.1lpm-250rpm.case",
+      "description": "Two hundred fifty RPM data from some funny shaped vessel.",
+      "variables": {}
+    }
+  }
 }
