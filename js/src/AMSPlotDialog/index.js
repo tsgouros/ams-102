@@ -87,7 +87,7 @@ class AMSPlotDialog extends React.Component {
     // Do the same for all the onChange functions so they see the
     // correct render() method and can find the dialogResults object.
     for (var i = 0; i < this.properties.input[0].contents.length; i++) {
-      //console.log("contents[",i,"]:", this.properties.input[0].contents[i]);
+      // console.log("contents[",i,"]:", this.properties.input[0].contents[i]);
       this.properties.input[0].contents[i].onChange =
         this.properties.input[0].contents[i].onChange.bind(this);
     }
@@ -98,7 +98,17 @@ class AMSPlotDialog extends React.Component {
     this.properties.input[0].contents =
       this.generateDialogList(nextProps.deliverDialogSpec);
 
+    // Fix the 'this' pointer for the onChange() methods.
+    for (var i = 0; i < this.properties.input[0].contents.length; i++) {
+      // console.log("*contents[",i,"]:", this.properties.input[0].contents[i]);
+      this.properties.input[0].contents[i].onChange =
+        this.properties.input[0].contents[i].onChange.bind(this);
+    }
+
+    console.log("AMSPlotDialog.cwrp:", this.properties.input[0].contents);
+    
     this.setState({dialogDescription: nextProps.deliverDialogSpec});
+
   }
   
   generateDialogList(dialogSpec) {
@@ -142,7 +152,7 @@ class AMSPlotDialog extends React.Component {
           componentLabels: [''],
         },
         onChange: function onChange(data) {
-          console.log("onChange:", JSON.stringify(data), this.dialogResults, this);
+          console.log("onChange:", data, this.dialogResults, this);
           if (this.dialogResults[data.id].widgetType == "enum") {
             this.dialogResults[data.id].value = data.value[0];
             data.value = this.dialogResults[data.id].value;

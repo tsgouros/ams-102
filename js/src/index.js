@@ -65,13 +65,13 @@ var vizCatalog = {
 // A list of data names and some descriptive information about each data
 // source.  The authoritative copy is over on the server side.
 var dataCatalog = {
-  m100rpm: {
+  s100rpm: {
     fileName: "100rpm.encas",
   },
-  m250rpm: {
+  s250rpm: {
     fileName: "250rpm.encas",
   },
-  m50rpm: {
+  s50rpm: {
     fileName: "50rpm.encas",
   }
 };
@@ -220,7 +220,7 @@ function next() {
 // This may not be necessary, but for some configurations making sure to
 // re-render every now and then, need it or not, is a good idea.  Test to
 // find out.
-// setInterval(next, 5000);
+setInterval(next, 5000);
 
 // This function's purpose is to make the visualization canvas update when a
 // parameter has been changed or the visualization changes.

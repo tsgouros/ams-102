@@ -166,6 +166,21 @@ class AMSControlPanel extends React.Component {
     this.returnVizCatalogEntry = this.returnVizCatalogEntry.bind(this);
   }
 
+  componentWillReceiveProps(nextProps) {
+
+    // If props have changed, adjust the important parts of the draw dialog
+    // spec and the visualization dialog spec.
+    this.drawDialogSpec[1].vals = Object.keys(nextProps.dataCatalog);
+    this.drawDialogSpec[1].selected = Object.keys(nextProps.dataCatalog)[0];
+
+    // Also update the local copies of the data catalog and visualization
+    // cookbook.
+    this.setState({
+      dataCatalog: nextProps.dataCatalog,
+      vizCatalog: nextProps.vizCatalog
+    });
+  }
+  
   // The vizDialog is used to change or create a single entry in the
   // vizCatalog.  This function is invoked by the vizDialog to return it to
   // this component.
