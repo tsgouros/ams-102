@@ -36,17 +36,6 @@ let connectionReady = false;
 // (It might eventually be that the cookbook is seeded from a server-side
 // cache, but during a session, the authoritative version is on the client.)
 //
-// A command to draw something contains a recipe and a data source.  The
-// recipe, since it is defined on the client, is entirely contained in the
-// draw command, while the data source is only named, with a reference to
-// the list kept over on the server.
-class drawCommand {
-  constructor(drawRecipe, dataName) {
-    // This will be a copy of an element from the vizCatalog.
-    this.drawRecipe = drawRecipe;  
-    this.dataName = dataName;
-  }
-}
 
 // This is the visualization cookbook, a collection of visualization recipes
 // that can be applied to the data sources.  It is a an association of names
@@ -63,7 +52,8 @@ var vizCatalog = {
 };
 
 // A list of data names and some descriptive information about each data
-// source.  The authoritative copy is over on the server side.
+// source.  The authoritative copy is over on the server side, but we keep a
+// copy over here to help populate the dialogs.
 var dataCatalog = {
   s100rpm: {
     fileName: "100rpm.encas",
@@ -176,10 +166,16 @@ smartConnect.onConnectionReady((connection) => {
   });
   SizeHelper.startListening();
   connectionReady = true;
+
+  // Now that the connection is ready, retrieve the data catalog and the
+  // starter version of the viz catalog.
+  model.pvwClient.amsService.getDataCatalog();
+
 });
 
 function onDrawCommand(drawCommand) {
   console.log("onDrawCommand is to execute:", drawCommand);
+  model.pvwClient.amsService.executePlot(drawCommand);
 };
 
 const divTitle = document.createElement('div');
@@ -236,8 +232,10 @@ next();
 //
 // - Hook up plot command and plotting apparatus.
 //
+// - Conditional rendering of visualization editor dialog.
+//
 // - Get plot possibilities from server (data catalog, plot varieties,
-// - variables that can be displayed, etc.)
+//   variables that can be displayed, etc.)
 //
 // - Move renderer down a level so that it's all inside a single React
 // - component that encompasses the canvas and the draw dialog.

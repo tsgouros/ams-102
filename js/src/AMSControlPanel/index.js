@@ -214,11 +214,9 @@ class AMSControlPanel extends React.Component {
     this.props.executeDrawCommand({
       visualization: this.drawDialogSpec[0].selected,
       data: this.drawDialogSpec[1].selected,
-      dataCatalog: this.state.dataCatalog,
       vizCatalog: vizCatalogCopy
     });
 
-    this.props.model.pvwClient.amsService.executePlot(p);
     this.render();
   }
 
@@ -229,7 +227,6 @@ class AMSControlPanel extends React.Component {
     this.props.executeDrawCommand({
       visualization: this.drawDialogSpec[0].selected,
       data: this.drawDialogSpec[1].selected,
-      dataCatalog: this.state.dataCatalog,
       vizCatalog: this.state.vizCatalog,
     });
 
@@ -268,15 +265,8 @@ class AMSControlPanel extends React.Component {
                        returnDialogResults={this.returnDrawCommand}/>        
         <div style={{display: 'table-cell'}}>
         <button onClick={() => this.props.model.pvwClient.amsService.testButton(testy)}>test</button>
-        <button onClick={() => this.props.model.pvwClient.amsService.getDataCatalog()}>get data</button>
-        <button onClick={() => this.props.model.pvwClient.amsService.drawLowRPM()}>low rpm</button>
-        <button onClick={() => this.props.model.pvwClient.amsService.drawHighRPM()}>high rpm</button>
         <button onClick={() => this.props.model.pvwClient.amsService.showTankGeometry()}>tank</button>
         <button onClick={() => this.props.model.pvwClient.amsService.clearAll()}>clear</button>
-        </div>
-        <div style={{display: 'table-cell'}}>
-        <NumberSliderWidget value={surfaceValue}
-            max="1000" min="10" onChange={this.updateSliderVal} name="surfaceValue"/>
         </div>
         </div>
 

@@ -147,6 +147,8 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         # A time stamp to keep from overloading the server.
         self.lastTime = 0  
 
+        self.debug = True
+        
     def printDebug(self):
         if self.debug:
             # This retrieves the name of the calling function.
@@ -260,17 +262,32 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
 
     @exportRPC("amsprotocol.execute.plot")
     def executePlot(self, arg):
+        # The arg here is a dict that contains the selected
+        # visualization recipe name, the visualization cookbook, the
+        # name of the data source, which hopefully is an entry in the
+        # data catalog.  The authoritative copy of the data catalog is
+        # over here, so need not be included in the data passed from
+        # the client.
+        vizName = arg["visualization"]
+        vizRecipe = arg["vizCatalog"][vizName]
+        dataName = arg["data"]
 
-        pr = AMSPlotRecipe(arg)
-        
-        self.plotCookBook.addRecipe(pr)
+        # The recipe we're receiving is either not in our current
+        # catalog, or it is, and should be replaced with this one.
+        # Remember, the client has the authoritative recipe
+        # collection.
+        self.plotCookBook.addRecipe(vizName, vizRecipe)
 
-        self.plotCookBook.printBook()
+        if self.debug:
+            self.plotCookBook.printBook()
 
-        self.currentPlot = self.dataObjects.plotData(self.dataObjects.keys()[0], pr)
+        # Create a plot object for the given data set and recipe.
+        self.currentPlot = self.dataObjects.plotData(dataName, vizName, self.plotCookBook)
 
+        # Execute that plot object.
         self.currentPlot.draw()
-        
+
+        # This makes the client update its view.        
         self.getApplication().InvokeEvent('UpdateEvent')
 
 

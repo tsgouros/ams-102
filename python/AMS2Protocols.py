@@ -145,8 +145,8 @@ class AMSPlot(object):
         # create a new 'Contour'
         contour = simple.Contour(Input=self.dataObject.getData())
 
-        print "DoubleContourValue", self.plotRecipe.get('DoubleContourValue')
-        print "EnumContourVariable", self.plotRecipe.get('EnumContourVariable')
+        #print "DoubleContourValue", self.plotRecipe.get('DoubleContourValue')
+        #print "EnumContourVariable", self.plotRecipe.get('EnumContourVariable')
         # Properties modified on contour
         #contour.ContourBy = ['POINTS', self.plotRecipe.get('enum.contour.variable')]
         contour.ContourBy = ['POINTS', 'uds_0_scalar']
@@ -448,33 +448,42 @@ class AMSDataObjectCollection(object):
         """
         return self.shown
 
-    def plotData(self, name, recipe):
-        return AMSPlot(self.index[name], recipe)
+    def plotData(self, name, recipeName, cookBook):
+        """
+        Create a plot object for the given data, with the given visualization
+        recipe.  Note that you have to execute the 'draw()' method of the plot
+        object to see anything.
+        """
+        return AMSPlot(self.index[name], cookBook.getRecipe(recipeName))
 
         
 class AMSPlotRecipe(object):
     """
-    A description of a plot.
+    A description of a plot.  This is a small dict that contains the
+    names of values needed for the visualizations.  The names of the
+    values are the ids assigned to them in the dialog spec on the
+    client side, which is why they might seem a little odd.
     """
-    def __init__(self, plotDict):
-        self.plotDict = plotDict
+    def __init__(self, plotRecipe):
+        self.plotRecipe = plotRecipe
 
     def getName(self):
-        return self.plotDict['CellPlotName']['value'][0]
+        return self.plotRecipe['CellPlotName']['value'][0]
         
-    def get(self, name):
-        return self.plotDict[name]['value']
+    def get(self, item):
+        """
+        Return one of the items in a plot recipe.
+        """
+        return self.plotRecipe[item]['value']
 
     def printRecipe(self):
-        print "Recipe name: ", self.getName()
-
-        # Find length of longest key.
+        # Find length of longest key, to do the filling by hand.
         maxl = 0
-        for k in self.plotDict.keys():
+        for k in self.plotRecipe.keys():
             maxl = max(maxl, len(k))
         
-        for k in self.plotDict.keys():
-            print "  {0}  {1}:  {2}".format(k, " "*(maxl-len(k)), self.plotDict[k]['value'])
+        for k in self.plotRecipe.keys():
+            print "  {0}{1}  :  {2}".format(k, " "*(maxl-len(k)), self.plotRecipe[k]['value'])
 
         
 class AMSCookBook(object):
@@ -484,17 +493,18 @@ class AMSCookBook(object):
     def __init__(self):
         self.index = dict()
 
-    def addRecipe(self, plotRecipe):
-        self.index[plotRecipe.getName()] = plotRecipe
+#    def addRecipe(self, plotRecipe):
+#        self.index[plotRecipe.getName()] = plotRecipe
 
-#    def addRecipe(self, name, plotRecipe):
-#        self.index[name] = plotRecipe
+    def addRecipe(self, name, plotRecipe):
+        self.index[name] = AMSPlotRecipe(plotRecipe)
 
     def getRecipe(self, name):
         return self.index[name]
 
     def printBook(self):
         for k in self.index.keys():
+            print "Recipe name: ", k
             self.index[k].printRecipe()
 
 
