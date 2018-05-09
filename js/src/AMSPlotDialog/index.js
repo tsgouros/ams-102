@@ -82,6 +82,7 @@ class AMSPlotDialog extends React.Component {
 
     // This has the effect of binding the 'this' pointer to the parent class,
     this.toggleModal = this.toggleModal.bind(this);
+    this.toggleModalAndExecute = this.toggleModalAndExecute.bind(this);
     this.generateDialogList = this.generateDialogList.bind(this);
 
     // Do the same for all the onChange functions so they see the
@@ -151,6 +152,9 @@ class AMSPlotDialog extends React.Component {
           help: dialogItem.help,
           componentLabels: [''],
         },
+        // componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+        //   console.log("in dialog.cwrp:", nextProps, this);
+        // },
         onChange: function onChange(data) {
           console.log("onChange:", data, this.dialogResults, this);
           if (this.dialogResults[data.id].widgetType == "enum") {
@@ -195,8 +199,8 @@ class AMSPlotDialog extends React.Component {
         </button>
 
         <Modal show={this.state.isOpen}
-          onClose={this.toggleModalAndExecute}
-          onCancel={this.toggleModal}
+               onClose={this.toggleModalAndExecute}
+               onCancel={this.toggleModal}
         >
 
         <PropertyPanel {...this.properties} />
