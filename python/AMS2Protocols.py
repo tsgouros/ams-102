@@ -483,7 +483,7 @@ class AMSPlotRecipe(object):
             maxl = max(maxl, len(k))
         
         for k in self.plotRecipe.keys():
-            print "  {0}{1}  :  {2}".format(k, " "*(maxl-len(k)), self.plotRecipe[k]['value'])
+            print "    {0}{1}  :  {2}".format(k, " "*(maxl-len(k)), self.plotRecipe[k]['value'])
 
         
 class AMSCookBook(object):
@@ -503,8 +503,9 @@ class AMSCookBook(object):
         return self.index[name]
 
     def printBook(self):
+        print "Available visualization recipes:"
         for k in self.index.keys():
-            print "Recipe name: ", k
+            print "  Recipe name: ", k
             self.index[k].printRecipe()
 
 
