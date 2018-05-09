@@ -167,11 +167,18 @@ class AMSPlotDialog extends React.Component {
   }
 
   // Called to open the dialog, and to close it.
-  toggleModal() {
+  toggleModalAndExecute() {
     if (this.state.isOpen) {
       this.props.returnDialogResults(this.dialogResults);
     };
 
+    this.setState({
+      isOpen: !this.state.isOpen
+    });
+  }
+
+  // Called to open the dialog, and to close it.
+  toggleModal() {
     this.setState({
       isOpen: !this.state.isOpen
     });
@@ -188,7 +195,9 @@ class AMSPlotDialog extends React.Component {
         </button>
 
         <Modal show={this.state.isOpen}
-          onClose={this.toggleModal}>
+          onClose={this.toggleModalAndExecute}
+          onCancel={this.toggleModal}
+        >
 
         <PropertyPanel {...this.properties} />
       
