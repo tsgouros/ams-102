@@ -4,7 +4,8 @@ import Modal from './Modal';
 //import DropDownWidget from 'paraviewweb/src/React/Widgets/DropDownWidget';
 //import TextInputWidget from 'paraviewweb/src/React/Widgets/TextInputWidget';
 
-import PropertyPanel from 'paraviewweb/src/React/Properties/PropertyPanel';
+import AMSPropertyPanel from '../AMSPropertyPanel';
+//import PropertyPanel from 'paraviewweb/src/React/Properties/PropertyPanel';
 
 // This class presents the user with a dialog for doing something or other.
 // The inputs are a spec for the dialog -- a list of what kinds of widgets
@@ -57,7 +58,7 @@ class AMSPlotDialog extends React.Component {
     //console.log("dialogDescription:", this.dialogDescription);
 
     // Convert the dialog description into a list of actionable pieces, as
-    // they are expected by the PropertyPanel widget.  This is essentially
+    // they are expected by the AMSPropertyPanel widget.  This is essentially
     // just format conversion, plus defining the onChange() function.
     //this.dialogList = [];
 
@@ -84,37 +85,29 @@ class AMSPlotDialog extends React.Component {
     this.toggleModal = this.toggleModal.bind(this);
     this.toggleModalAndExecute = this.toggleModalAndExecute.bind(this);
     this.generateDialogList = this.generateDialogList.bind(this);
-
-    // Do the same for all the onChange functions so they see the
-    // correct render() method and can find the dialogResults object.
-    for (var i = 0; i < this.properties.input[0].contents.length; i++) {
-      // console.log("contents[",i,"]:", this.properties.input[0].contents[i]);
-      this.properties.input[0].contents[i].onChange =
-        this.properties.input[0].contents[i].onChange.bind(this);
-    }
   }
 
-  componentWillReceiveProps(nextProps) {
+  // componentWillReceiveProps(nextProps) {
 
-    this.properties.input[0].contents =
-      this.generateDialogList(nextProps.deliverDialogSpec);
+  //   this.properties.input[0].contents =
+  //     this.generateDialogList(nextProps.deliverDialogSpec);
 
-    // Fix the 'this' pointer for the onChange() methods.
-    for (var i = 0; i < this.properties.input[0].contents.length; i++) {
-      // console.log("*contents[",i,"]:", this.properties.input[0].contents[i]);
-      this.properties.input[0].contents[i].onChange =
-        this.properties.input[0].contents[i].onChange.bind(this);
-    }
+  //   // Fix the 'this' pointer for the onChange() methods.
+  //   for (var i = 0; i < this.properties.input[0].contents.length; i++) {
+  //     // console.log("*contents[",i,"]:", this.properties.input[0].contents[i]);
+  //     this.properties.input[0].contents[i].onChange =
+  //       this.properties.input[0].contents[i].onChange.bind(this);
+  //   }
 
-    console.log("AMSPlotDialog.cwrp:", this.properties.input[0].contents);
+  //   console.log("AMSPlotDialog.cwrp:", this.properties.input[0].contents);
     
-    this.setState({dialogDescription: nextProps.deliverDialogSpec});
+  //   this.setState({dialogDescription: nextProps.deliverDialogSpec});
 
-  }
+  // }
   
   generateDialogList(dialogSpec) {
 
-    return dialogSpec.reduce(function(dL, dialogItem) {
+    var ds = dialogSpec.reduce(function(dL, dialogItem) {
 
       // The domains differ according to the widget type.
       let itemDomain = {};
@@ -141,7 +134,7 @@ class AMSPlotDialog extends React.Component {
       dL.push({
         data: { value: dialogItem.selected, id: dialogItem.id },
         name: dialogItem.name,
-        show: () => true,
+        show: dialogItem.show,
         widgetType: dialogItem.widgetType,
         ui: {
           propType: dialogItem.widgetType,
@@ -152,11 +145,14 @@ class AMSPlotDialog extends React.Component {
           help: dialogItem.help,
           componentLabels: [''],
         },
-        // componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-        //   console.log("in dialog.cwrp:", nextProps, this);
-        // },
+        componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+          console.log("in dialog.cwrp:", nextProps, this);
+        },
         onChange: function onChange(data) {
           console.log("onChange:", data, this.dialogResults, this);
+
+          this.properties.input[0].title += "j";
+          
           if (this.dialogResults[data.id].widgetType == "enum") {
             this.dialogResults[data.id].value = data.value[0];
             data.value = this.dialogResults[data.id].value;
@@ -168,6 +164,15 @@ class AMSPlotDialog extends React.Component {
       });
       return dL;
     }, [] );
+
+    // Do the same for all the onChange functions so they see the
+    // correct render() method and can find the dialogResults object.
+    for (var i = 0; i < ds.length; i++) {
+      // console.log("contents[",i,"]:", this.properties.input[0].contents[i]);
+      ds[i].onChange = ds[i].onChange.bind(this);
+    }
+
+    return ds;
   }
 
   // Called to open the dialog, and to close it.
@@ -189,8 +194,11 @@ class AMSPlotDialog extends React.Component {
   }
 
   render() {
-
-    //console.log("AMSPlotDialog rendering", this.props.buttonLabel, this.state);
+        
+    this.properties.input[0].contents = 
+      this.generateDialogList(this.state.dialogDescription);
+    
+    console.log("AMSPlotDialog rendering", this.props.buttonLabel, this.properties, this.state);
 
     return (
         <div className="AMSPlotDialog" style={{display: 'table-cell'}}>
@@ -203,7 +211,7 @@ class AMSPlotDialog extends React.Component {
                onCancel={this.toggleModal}
         >
 
-        <PropertyPanel {...this.properties} />
+        <AMSPropertyPanel {...this.properties} />
       
         </Modal>
       </div>

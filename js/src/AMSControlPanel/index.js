@@ -62,6 +62,7 @@ class AMSControlPanel extends React.Component {
         selected: Object.keys(props.vizCatalog)[0],
         dataType: "string",
         id: "plotName",
+        show: () => true,
         help: "Select by name a visualization to render."          
       },
       {
@@ -71,6 +72,7 @@ class AMSControlPanel extends React.Component {
         selected: Object.keys(props.dataCatalog)[0],
         dataType: "string",
         id: "dataSource",
+        show: () => true,
         help: "select a data source by name."
       }
     ];
@@ -83,6 +85,7 @@ class AMSControlPanel extends React.Component {
         selected: ["plot name"],
         id: "CellPlotName",
         dataType: "string",
+        show: () => true,
         help: "Give this collection of plot parameters a name so you can use it again.",
       },
       {
@@ -92,6 +95,7 @@ class AMSControlPanel extends React.Component {
         selected: "contour",      // the current value
         id: "EnumPlotType",      // just has to be unique in this list
         dataType: "string",           // 'string' or 'int'
+        show: () => true,
         help: "Choose the type of plot to view.",
       },
       {
@@ -106,6 +110,11 @@ class AMSControlPanel extends React.Component {
         selected: "uds_0_scalar",
         id: "EnumContourVariable",
         dataType: "string",
+        show: () => {
+          
+          //console.log("contour variable show:", this);
+          return true;
+        },
         help: "Which value to contour?",
       },
       {
@@ -115,6 +124,7 @@ class AMSControlPanel extends React.Component {
         selected: [400.0],
         id: "DoubleContourValue",
         dataType: "double",
+        show: () => true,
         help: "Select a contour value",
       },
       {
@@ -129,6 +139,7 @@ class AMSControlPanel extends React.Component {
         selected: "pressure",
         id: "EnumColorVariable",
         dataType: "string",
+        show: () => true,
         help: "Which variable to color the contour or streamline?",
       },
       // {
@@ -196,7 +207,7 @@ class AMSControlPanel extends React.Component {
     // Adjust the corresponding entry in the drawDialogSpec.  First we
     // adjust the list of data sets to correspond to the data catalog (in
     // case it has changed recently).
-    this.drawDialogSpec[1].vals = Object.keys(this.props.dataCatalog);
+    this.drawDialogSpec[1].vals = Object.keys(this.state.dataCatalog);
     // Then we adjust the list of available (named) visualizations.  We
     // don't count on the setState() function above to have had effect yet,
     // so we do it off the modified copy.
