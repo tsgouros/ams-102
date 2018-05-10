@@ -197,8 +197,11 @@ class AMSControlPanel extends React.Component {
           componentLabels: [''],
         },
         show: () => {
-          //console.log("contour variable show:", this);
-          return true;
+          if (this.vizDialogSpec.EnumPlotType.data.value === "contour") {
+            return true;
+          } else {
+            return false;
+          }
         },
         onChange: function onChange(data) {
           this.vizDialogSpec[data.id].data.value = data.value[0];
@@ -219,7 +222,13 @@ class AMSControlPanel extends React.Component {
           help: "Select a contour value",
           componentLabels: [''],
         },
-        show: () => true,
+        show: () => {
+          if (this.vizDialogSpec.EnumPlotType.data.value === "contour") {
+            return true;
+          } else {
+            return false;
+          }
+        },
         onChange: function onChange(data) {
           this.vizDialogSpec[data.id].data.value = data.value;
           this.render();
