@@ -367,9 +367,11 @@ class AMSControlPanel extends React.Component {
         <AMSPlotDialog buttonLabel="Edit plot descriptions"
                        title="Edit plot description"
                        dialogSpec={this.vizDialogSpec}
+                       closeLabel="Save"
                        returnDialogResults={this.returnVizCatalogEntry}/>        
         <AMSPlotDialog buttonLabel="Choose plot to draw"
                        title="Select visualization"
+                       closeLabel="Draw"
                        dialogSpec={this.drawDialogSpec}
                        returnDialogResults={this.returnDrawCommand}/>        
         <div style={{display: 'table-cell'}}>

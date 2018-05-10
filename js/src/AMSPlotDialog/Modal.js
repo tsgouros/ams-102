@@ -10,7 +10,7 @@ class Modal extends React.Component {
 
     // The gray background
     const backdropStyle = {
-      position: 'fixed',
+      position: 'relative', //'fixed',
       top: 0,
       bottom: 0,
       left: 0,
@@ -37,10 +37,10 @@ class Modal extends React.Component {
 
           <div className="footer">
             <button onClick={this.props.onCancel}>
-              Cancel
+              {this.props.cancelLabel}
             </button>&nbsp;&nbsp;&nbsp;&nbsp;
             <button onClick={this.props.onClose}>
-              Close
+              {this.props.closeLabel}
             </button>
           </div>
         </div>

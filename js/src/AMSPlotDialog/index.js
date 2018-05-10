@@ -42,17 +42,6 @@ class AMSPlotDialog extends React.Component {
       //title: this.props.buttonLabel,
     };
 
-    // This will hold the results of the dialog session.  We have to
-    // keep the widget type because there is something odd about the
-    // handling of values for the enum type.
-    this.dialogResults = {};
-    for (var key in this.props.dialogSpec) {
-      this.dialogResults[key] = {
-        value: this.props.dialogSpec[key].data.value,
-        widgetType: this.props.dialogSpec[key].widgetType,
-      };
-    };
-
     this.properties = {
       input: [
         {
@@ -96,7 +85,7 @@ class AMSPlotDialog extends React.Component {
   // Called to open the dialog, and to close it.
   toggleModalAndExecute() {
     if (this.state.isOpen) {
-      this.props.returnDialogResults(this.dialogResults);
+      this.props.returnDialogResults();
     };
 
     this.setState({
@@ -126,7 +115,9 @@ class AMSPlotDialog extends React.Component {
         </button>
 
         <Modal show={this.state.isOpen}
-               onClose={this.toggleModalAndExecute}
+      closeLabel={this.props.closeLabel}
+      cancelLabel="Cancel"
+      onClose={this.toggleModalAndExecute}
                onCancel={this.toggleModal}
         >
 
