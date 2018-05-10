@@ -54,93 +54,181 @@ class AMSControlPanel extends React.Component {
 
     };
 
-    this.drawDialogSpec = [
-      {
-        name: "plotName",
+    this.drawDialogSpec = {
+      plotName: {
+        data: { value: Object.keys(props.vizCatalog)[0], id: "plotName" },
         widgetType: "enum",
-        vals: Object.keys(props.vizCatalog),
-        selected: Object.keys(props.vizCatalog)[0],
-        dataType: "string",
-        id: "plotName",
+        depth: 1,  // This refers to the order in which the panel elements appear.
+        ui: {
+          propType: "enum",
+          label: "Visualization Name",
+          domain: Object.keys(props.vizCatalog).reduce(function(acc, cur) {
+            acc[cur] = cur;
+            return acc;
+          }, {}),
+          type: "string",
+          layout: '1',
+          help: "Select by name a visualization to render."          ,
+          componentLabels: [''],
+        },
         show: () => true,
-        help: "Select by name a visualization to render."          
+        onChange: function onChange(data) {
+          this.drawDialogSpec[data.id].data.value = data.value[0];
+          data.value = this.drawDialogSpec[data.id].data.value;
+          this.render();
+        }
       },
-      {
-        name: "data",
+      dataSource: {
+        data: { value: Object.keys(props.dataCatalog)[0], id: "dataSource" },
         widgetType: "enum",
-        vals: Object.keys(props.dataCatalog),
-        selected: Object.keys(props.dataCatalog)[0],
-        dataType: "string",
-        id: "dataSource",
+        depth: 2,
+        ui: {
+          propType: "enum",
+          label: "Data Source",
+          domain: Object.keys(props.dataCatalog).reduce(function(acc, cur) {
+            acc[cur] = cur;
+            return acc;
+          }, {}),
+          type: "string",
+          layout: '1',
+          help: "select a data source by name.",
+          componentLabels: [''],
+        },
         show: () => true,
-        help: "select a data source by name."
+        onChange: function onChange(data) {
+          this.drawDialogSpec[data.id].data.value = data.value[0];
+          data.value = this.drawDialogSpec[data.id].data.value;
+          this.render();
+        }
       }
-    ];
+    };
 
-    this.vizDialogSpec = [
-      {
-        name: "plotName",
+    for (var key in this.drawDialogSpec) {
+      this.drawDialogSpec[key].onChange =
+        this.drawDialogSpec[key].onChange.bind(this);
+    };
+
+    
+    this.vizDialogSpec = {
+      CellPlotName: {
+        data: { value: ["default"], id: "CellPlotName" },
         widgetType: "cell",
-        vals: [],
-        selected: ["plot name"],
-        id: "CellPlotName",
-        dataType: "string",
-        show: () => true,
-        help: "Give this collection of plot parameters a name so you can use it again.",
+        depth: 1,
+        ui: {
+          propType: "cell",
+          label: "Visualization name",
+          domain: { range: [{ force: false }] },
+          type: "string",
+          layout: '1',
+          help: "Give this collection of plot parameters a name so you can use it again.",
+          componentLabels: [''],
+        },
+        show: () => true,        
+        onChange: function onChange(data) {
+          this.vizDialogSpec[data.id].data.value = data.value;
+          this.render();
+        }
       },
-      {
-        name: "plotType",
+      EnumPlotType: {
+        data: { value: "contour", id: "EnumPlotType" },
         widgetType: "enum",
-        vals: ["contour", "streamlines"],  // the list of possible values
-        selected: "contour",      // the current value
-        id: "EnumPlotType",      // just has to be unique in this list
-        dataType: "string",           // 'string' or 'int'
+        depth: 4,
+        ui: {
+          propType: "enum",
+          label: "Visualization type",
+          domain: ["contour", "streamlines"].reduce(function(acc, cur) {
+            acc[cur] = cur;
+            return acc;
+          }, {}),  // the list of possible values
+          type: "string",           // 'string' or 'int'
+          layout: '1',
+          help: "Choose the type of plot to view.",
+          componentLabels: [''],
+        },
         show: () => true,
-        help: "Choose the type of plot to view.",
+        onChange: function onChange(data) {
+          this.vizDialogSpec[data.id].data.value = data.value[0];
+          data.value = this.vizDialogSpec[data.id].data.value;
+          this.render();
+        }
       },
-      {
-        name: "contour variable",
+      EnumContourVariable: {
+        data: { value: "uds_0_scalar", id: "EnumContourVariable" },
         widgetType: "enum",
-        vals: ["uds_0_scalar",
-               "pressure",
-               "axial_velocity",
-               "radial_velocity",
-               "tangential_velocity"
-              ],
-        selected: "uds_0_scalar",
-        id: "EnumContourVariable",
-        dataType: "string",
+        depth: 8,
+        ui: {
+          propType: "enum",
+          label: "Contour variable",
+          domain: ["uds_0_scalar",
+                   "pressure",
+                   "axial_velocity",
+                   "radial_velocity",
+                   "tangential_velocity"
+                  ].reduce(function(acc, cur) {
+            acc[cur] = cur;
+            return acc;
+          }, {}),
+          type: "string",
+          layout: '1',
+          help: "Which value to contour?",
+          componentLabels: [''],
+        },
         show: () => {
-          
           //console.log("contour variable show:", this);
           return true;
         },
-        help: "Which value to contour?",
+        onChange: function onChange(data) {
+          this.vizDialogSpec[data.id].data.value = data.value[0];
+          data.value = this.vizDialogSpec[data.id].data.value;
+          this.render();
+        }
       },
-      {
-        name: "contour value",
+      DoubleContourValue: {
+        data: {value: [400.0], id: "DoubleContourValue" },
         widgetType: "cell",
-        vals: [0.0, 800.0],
-        selected: [400.0],
-        id: "DoubleContourValue",
-        dataType: "double",
+        depth: 12,
+        ui: {
+          propType: "cell",
+          label: "Contour value",
+          domain: { range: [{ min: 0.0, max: 800.0, force: true }] },
+          type: "double",
+          layout: '1',
+          help: "Select a contour value",
+          componentLabels: [''],
+        },
         show: () => true,
-        help: "Select a contour value",
+        onChange: function onChange(data) {
+          this.vizDialogSpec[data.id].data.value = data.value;
+          this.render();
+        }
       },
-      {
-        name: "color variable",
+      EnumColorVariable: {
+        data: { value: "pressure", id: "EnumColorVariable" },
         widgetType: "enum",
-        vals: ["pressure",
-               "uds_0_scalar",
-               "axial_velocity",
-               "radial_velocity",
-               "tangential_velocity"
-              ],
-        selected: "pressure",
-        id: "EnumColorVariable",
-        dataType: "string",
+        depth: 16,
+        ui: {
+          propType: "enum",
+          label: "Color variable",
+          domain: ["pressure",
+                   "uds_0_scalar",
+                   "axial_velocity",
+                   "radial_velocity",
+                   "tangential_velocity"
+                  ].reduce(function(acc, cur) {
+            acc[cur] = cur;
+            return acc;
+          }, {}),
+          type: "string",
+          layout: '1',
+          help: "Which variable to color the contour or streamline?",
+          componentLabels: [''],
+        },
         show: () => true,
-        help: "Which variable to color the contour or streamline?",
+        onChange: function onChange(data) {
+          this.vizDialogSpec[data.id].data.value = data.value[0];
+          data.value = this.vizDialogSpec[data.id].data.value;
+          this.render();
+        }
       },
       // {
       //   name: "contour value",
@@ -169,7 +257,12 @@ class AMSControlPanel extends React.Component {
       //   dataType: "int",
       //   help: "A little help text...",
       // },
-    ];   
+    };   
+
+    for (var key in this.vizDialogSpec) {
+      this.vizDialogSpec[key].onChange =
+        this.vizDialogSpec[key].onChange.bind(this);
+    };
 
     this.updateSliderVal = this.updateSliderVal.bind(this);
 
@@ -177,20 +270,20 @@ class AMSControlPanel extends React.Component {
     this.returnVizCatalogEntry = this.returnVizCatalogEntry.bind(this);
   }
 
-  componentWillReceiveProps(nextProps) {
+  // componentWillReceiveProps(nextProps) {
 
-    // If props have changed, adjust the important parts of the draw dialog
-    // spec and the visualization dialog spec.
-    this.drawDialogSpec[1].vals = Object.keys(nextProps.dataCatalog);
-    this.drawDialogSpec[1].selected = Object.keys(nextProps.dataCatalog)[0];
+  //   // If props have changed, adjust the important parts of the draw dialog
+  //   // spec and the visualization dialog spec.
+  //   this.drawDialogSpec[1].vals = Object.keys(nextProps.dataCatalog);
+  //   this.drawDialogSpec[1].selected = Object.keys(nextProps.dataCatalog)[0];
 
-    // Also update the local copies of the data catalog and visualization
-    // cookbook.
-    this.setState({
-      dataCatalog: nextProps.dataCatalog,
-      vizCatalog: nextProps.vizCatalog
-    });
-  }
+  //   // Also update the local copies of the data catalog and visualization
+  //   // cookbook.
+  //   this.setState({
+  //     dataCatalog: nextProps.dataCatalog,
+  //     vizCatalog: nextProps.vizCatalog
+  //   });
+  // }
   
   // The vizDialog is used to change or create a single entry in the
   // vizCatalog.  This function is invoked by the vizDialog to return it to

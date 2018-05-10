@@ -45,14 +45,13 @@ class AMSPlotDialog extends React.Component {
     // This will hold the results of the dialog session.  We have to
     // keep the widget type because there is something odd about the
     // handling of values for the enum type.
-    this.dialogResults =
-      this.props.dialogSpec.reduce(function(dialogObj,dialogItem) {
-        dialogObj[dialogItem.id] = {
-          value: dialogItem.selected,
-          widgetType: dialogItem.widgetType,
-        };
-        return dialogObj;
-      }, {});
+    this.dialogResults = {};
+    for (var key in this.props.dialogSpec) {
+      this.dialogResults[key] = {
+        value: this.props.dialogSpec[key].data.value,
+        widgetType: this.props.dialogSpec[key].widgetType,
+      };
+    };
 
     this.properties = {
       input: [
@@ -77,70 +76,21 @@ class AMSPlotDialog extends React.Component {
   }
 
   generateDialogList(dialogSpec) {
-
-    var ds = dialogSpec.reduce(function(dL, dialogItem) {
-
-      // The domains differ according to the widget type.
-      let itemDomain = {};
-      if (dialogItem.widgetType == "enum") {
-        itemDomain = dialogItem.vals.reduce(function(result, item) {
-          result[item] = item; return result;}, {});
-      } else if (dialogItem.widgetType == "slider") {
-        itemDomain = { min: dialogItem.vals[0], max: dialogItem.vals[1] };
-      } else if (dialogItem.widgetType == "cell") {
-        if (dialogItem.dataType != "string") {
-          itemDomain = { range: [{ min: dialogItem.vals[0],
-                                   max: dialogItem.vals[1],
-                                   force: true,
-                                 }]
-                       };
-        } else {
-          itemDomain = { range: [{ force: false }] };
-        }
+    // Accept an object dialogSpec, and return a list, ordered by the 'depth'
+    // field in each entry.
+    var outList = [];
+    for (var key in dialogSpec) {
+      if (outList.length == 0) {
+        outList = [ dialogSpec[key] ];
+      } else {
+        var i = 0;
+        while ((i < outList.length) &&
+               (outList[i].depth < dialogSpec[key].depth)) i += 1;
+        outList.splice(i, 0, dialogSpec[key]);
       }
-
-      // Add an item to the dialog list, this is the format expected
-      // by the PropPanel widget.  Note that the id vaues must be
-      // unique to each item.
-      dL.push({
-        data: { value: dialogItem.selected, id: dialogItem.id },
-        name: dialogItem.name,
-        show: dialogItem.show,
-        widgetType: dialogItem.widgetType,
-        ui: {
-          propType: dialogItem.widgetType,
-          label: dialogItem.name,
-          domain: itemDomain,
-          type: dialogItem.dataType,
-          layout: '1',
-          help: dialogItem.help,
-          componentLabels: [''],
-        },
-        onChange: function onChange(data) {
-          console.log("onChange:", data, this.dialogResults, this);
-
-          this.properties.input[0].title += "j";
-          
-          if (this.dialogResults[data.id].widgetType == "enum") {
-            this.dialogResults[data.id].value = data.value[0];
-            data.value = this.dialogResults[data.id].value;
-          } else {
-            this.dialogResults[data.id].value = data.value;
-          }
-          this.render();
-        },
-      });
-      return dL;
-    }, [] );
-
-    // Do the same for all the onChange functions so they see the
-    // correct render() method and can find the dialogResults object.
-    for (var i = 0; i < ds.length; i++) {
-      // console.log("contents[",i,"]:", this.properties.input[0].contents[i]);
-      ds[i].onChange = ds[i].onChange.bind(this);
     }
 
-    return ds;
+    return outList;
   }
 
   // Called to open the dialog, and to close it.
