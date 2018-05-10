@@ -468,22 +468,22 @@ class AMSPlotRecipe(object):
         self.plotRecipe = plotRecipe
 
     def getName(self):
-        return self.plotRecipe['CellPlotName']['value'][0]
+        return self.plotRecipe['CellPlotName']
         
     def get(self, item):
         """
         Return one of the items in a plot recipe.
         """
-        return self.plotRecipe[item]['value']
+        return self.plotRecipe[item]
 
     def printRecipe(self):
-        # Find length of longest key, to do the filling by hand.
+        # Find length of longest key, to left-justify the recipe ingredients.
         maxl = 0
         for k in self.plotRecipe.keys():
             maxl = max(maxl, len(k))
         
         for k in self.plotRecipe.keys():
-            print "    {0}{1}  :  {2}".format(k, " "*(maxl-len(k)), self.plotRecipe[k]['value'])
+            print "    {0}{1}  :  {2}".format(k, " "*(maxl-len(k)), self.plotRecipe[k])
 
         
 class AMSCookBook(object):

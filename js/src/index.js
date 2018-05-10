@@ -42,12 +42,12 @@ let connectionReady = false;
 // and descriptions of visualizations.  This is the authoritative copy,
 // though there is (probably) also a copy on the server.
 var vizCatalog = {
-  "plot name": {
+  "default": {
     EnumPlotType:  "contour",
     EnumContourVariable:  "uds_0_scalar",
-    DoubleContourValue:  [400],
+    DoubleContourValue:  400,
     EnumColorVariable: "pressure",
-    CellPlotName: ["plot name"],
+    CellPlotName: "plot name",
   }   
 };
 
@@ -55,15 +55,9 @@ var vizCatalog = {
 // source.  The authoritative copy is over on the server side, but we keep a
 // copy over here to help populate the dialogs.
 var dataCatalog = {
-  s100rpm: {
+  m100rpm: {
     fileName: "100rpm.encas",
   },
-  s250rpm: {
-    fileName: "250rpm.encas",
-  },
-  s50rpm: {
-    fileName: "50rpm.encas",
-  }
 };
 
 // This is the collection of RPC functions supported by the pvpython server.

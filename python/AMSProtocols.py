@@ -268,6 +268,8 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         # data catalog.  The authoritative copy of the data catalog is
         # over here, so need not be included in the data passed from
         # the client.
+        print "execute.plot", arg
+        
         vizName = arg["visualization"]
         vizRecipe = arg["vizCatalog"][vizName]
         dataName = arg["data"]

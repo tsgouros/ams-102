@@ -47,24 +47,41 @@ class AMSControlPanel extends React.Component {
     super(props);
     console.log("Constructing AMSControlPanel:", props);
 
-    // 
+    // The vizCatalog and dataCatalog are passed back and forth between
+    // client and server.  The server has the authoritative dataCatalog, and
+    // we have the authoritative vizCatalog.  These are the state of the
+    // client.
     this.state = {
       vizCatalog: props.vizCatalog,
       dataCatalog: props.dataCatalog,
-
     };
 
+    // The dialog specs are built from the client state, to show the user a
+    // menu of options.
+    this.drawDialogSpec = {};
+    this.vizDialogSpec = {};
+    this.currentViz = Object.keys(props.vizCatalog)[0];
+    this.currentData = Object.keys(props.dataCatalog)[0];
+    
+    this.returnDrawCommand = this.returnDrawCommand.bind(this);
+    this.returnVizCatalogEntry = this.returnVizCatalogEntry.bind(this);
+
+    this.buildVizDialogSpecs();
+    this.buildDrawDialogSpecs();
+  }
+
+  buildDrawDialogSpecs() {
     this.drawDialogSpec = {
       plotName: {
-        data: { value: Object.keys(props.vizCatalog)[0], id: "plotName" },
+        data: { value: this.currentViz, id: "plotName" },
         widgetType: "enum",
         depth: 1,  // This refers to the order in which the panel elements appear.
         ui: {
           propType: "enum",
           label: "Visualization Name",
-          domain: Object.keys(props.vizCatalog).reduce(function(acc, cur) {
-            acc[cur] = cur;
-            return acc;
+          domain: Object.keys(this.props.vizCatalog).reduce(function(res, cur) {
+            res[cur] = cur;
+            return res;
           }, {}),
           type: "string",
           layout: '1',
@@ -75,19 +92,20 @@ class AMSControlPanel extends React.Component {
         onChange: function onChange(data) {
           this.drawDialogSpec[data.id].data.value = data.value[0];
           data.value = this.drawDialogSpec[data.id].data.value;
+          this.currentViz = data.value;
           this.render();
         }
       },
       dataSource: {
-        data: { value: Object.keys(props.dataCatalog)[0], id: "dataSource" },
+        data: { value: this.currentData, id: "dataSource" },
         widgetType: "enum",
         depth: 2,
         ui: {
           propType: "enum",
           label: "Data Source",
-          domain: Object.keys(props.dataCatalog).reduce(function(acc, cur) {
-            acc[cur] = cur;
-            return acc;
+          domain: Object.keys(this.props.dataCatalog).reduce(function(res, cur) {
+            res[cur] = cur;
+            return res;
           }, {}),
           type: "string",
           layout: '1',
@@ -98,6 +116,7 @@ class AMSControlPanel extends React.Component {
         onChange: function onChange(data) {
           this.drawDialogSpec[data.id].data.value = data.value[0];
           data.value = this.drawDialogSpec[data.id].data.value;
+          this.currentData = data.value;
           this.render();
         }
       }
@@ -107,11 +126,13 @@ class AMSControlPanel extends React.Component {
       this.drawDialogSpec[key].onChange =
         this.drawDialogSpec[key].onChange.bind(this);
     };
-
+  }
+    
+  buildVizDialogSpecs() {
     
     this.vizDialogSpec = {
       CellPlotName: {
-        data: { value: ["default"], id: "CellPlotName" },
+        data: { value: [ this.currentViz ], id: "CellPlotName" },
         widgetType: "cell",
         depth: 1,
         ui: {
@@ -125,7 +146,9 @@ class AMSControlPanel extends React.Component {
         },
         show: () => true,        
         onChange: function onChange(data) {
+          console.log("changing the plot name:", data);
           this.vizDialogSpec[data.id].data.value = data.value;
+          this.currentViz = data.value[0];
           this.render();
         }
       },
@@ -136,9 +159,9 @@ class AMSControlPanel extends React.Component {
         ui: {
           propType: "enum",
           label: "Visualization type",
-          domain: ["contour", "streamlines"].reduce(function(acc, cur) {
-            acc[cur] = cur;
-            return acc;
+          domain: ["contour", "streamlines"].reduce(function(res, cur) {
+            res[cur] = cur;
+            return res;
           }, {}),  // the list of possible values
           type: "string",           // 'string' or 'int'
           layout: '1',
@@ -164,9 +187,9 @@ class AMSControlPanel extends React.Component {
                    "axial_velocity",
                    "radial_velocity",
                    "tangential_velocity"
-                  ].reduce(function(acc, cur) {
-            acc[cur] = cur;
-            return acc;
+                  ].reduce(function(res, cur) {
+            res[cur] = cur;
+            return res;
           }, {}),
           type: "string",
           layout: '1',
@@ -214,9 +237,9 @@ class AMSControlPanel extends React.Component {
                    "axial_velocity",
                    "radial_velocity",
                    "tangential_velocity"
-                  ].reduce(function(acc, cur) {
-            acc[cur] = cur;
-            return acc;
+                  ].reduce(function(res, cur) {
+            res[cur] = cur;
+            return res;
           }, {}),
           type: "string",
           layout: '1',
@@ -263,96 +286,76 @@ class AMSControlPanel extends React.Component {
       this.vizDialogSpec[key].onChange =
         this.vizDialogSpec[key].onChange.bind(this);
     };
-
-    this.updateSliderVal = this.updateSliderVal.bind(this);
-
-    this.returnDrawCommand = this.returnDrawCommand.bind(this);
-    this.returnVizCatalogEntry = this.returnVizCatalogEntry.bind(this);
   }
-
-  // componentWillReceiveProps(nextProps) {
-
-  //   // If props have changed, adjust the important parts of the draw dialog
-  //   // spec and the visualization dialog spec.
-  //   this.drawDialogSpec[1].vals = Object.keys(nextProps.dataCatalog);
-  //   this.drawDialogSpec[1].selected = Object.keys(nextProps.dataCatalog)[0];
-
-  //   // Also update the local copies of the data catalog and visualization
-  //   // cookbook.
-  //   this.setState({
-  //     dataCatalog: nextProps.dataCatalog,
-  //     vizCatalog: nextProps.vizCatalog
-  //   });
-  // }
   
   // The vizDialog is used to change or create a single entry in the
-  // vizCatalog.  This function is invoked by the vizDialog to return it to
-  // this component.
-  returnVizCatalogEntry(p) {
+  // vizCatalog.  This function is invoked by the vizDialog to park the new
+  // visualization in the catalog where it is convenient.
+  returnVizCatalogEntry() {
 
+    console.log("show state in returnVizCatalogEntry:", this.currentViz, this.state.vizCatalog, this.vizDialogSpec);
+
+    var newEntryName = this.vizDialogSpec.CellPlotName.data.value;
+    var newEntry = Object.values(this.vizDialogSpec).reduce(function(res, val) {
+      if (val.widgetType === "cell") {
+        res[val.data.id] = val.data.value[0];
+      } else {
+        res[val.data.id] = val.data.value;
+      };
+      return res;
+    }, {});
+        
     // Reset the entry in the plot catalog that has just been modified.
     var vizCatalogCopy = this.state.vizCatalog;
-    vizCatalogCopy[p.CellPlotName.value[0]] = p;
+    vizCatalogCopy[newEntryName] = newEntry;
     this.setState({vizCatalog: vizCatalogCopy});
-
-    //console.log("show state in returnVizCatalogEntry:", this.state.vizCatalog);
 
     // Adjust the corresponding entry in the drawDialogSpec.  First we
     // adjust the list of data sets to correspond to the data catalog (in
     // case it has changed recently).
-    this.drawDialogSpec[1].vals = Object.keys(this.state.dataCatalog);
+    this.drawDialogSpec.plotName.ui.domain =
+      Object.keys(this.state.dataCatalog).reduce(function(res, cur) {
+        res[cur] = cur;
+        return res;
+      }, {});
     // Then we adjust the list of available (named) visualizations.  We
     // don't count on the setState() function above to have had effect yet,
     // so we do it off the modified copy.
-    this.drawDialogSpec[0].vals = Object.keys(vizCatalogCopy);
+    this.drawDialogSpec.dataSource.ui.domain =
+      Object.keys(vizCatalogCopy).reduce(function(res, cur) {
+        res[cur] = cur;
+        return res;
+      }, {});
 
-    if (this.drawDialogSpec[0].vals.length > 0) {
-      this.drawDialogSpec[0].selected = p.CellPlotName.value[0];
-    } else {
-      this.drawDialogSpec[0].selected = "plot name";
-    }
-
-    //console.log("return catalog entry", this.state);
+    console.log("return catalog entry", this.drawDialogSpec);
     
-    // Draw this plot.  This should specify the data, too.
+    // Draw this plot.  
     this.props.executeDrawCommand({
-      visualization: this.drawDialogSpec[0].selected,
-      data: this.drawDialogSpec[1].selected,
+      visualization: this.vizDialogSpec.CellPlotName.data.value[0],
+      data: this.drawDialogSpec.dataSource.data.value,
       vizCatalog: vizCatalogCopy
     });
 
     this.render();
   }
 
-  returnDrawCommand(p) {
+  returnDrawCommand() {
     //console.log("returned draw command:", p);
 
     // Draw this plot.  This should specify the data, too.
     this.props.executeDrawCommand({
-      visualization: this.drawDialogSpec[0].selected,
-      data: this.drawDialogSpec[1].selected,
+      visualization: this.currentViz,
+      data: this.currentData,
       vizCatalog: this.state.vizCatalog,
     });
 
     this.render();
   }
   
-  updateSliderVal(e) {
-    // What changes, and what value?
-    const which = e.target.name;
-    const newVal = e.target.value;
-    const toUpdateSlider = {};
-    toUpdateSlider[which] = newVal;
-
-    // Update the new value in the display.
-    this.setState(toUpdateSlider);
-
-    // Communicate it to the server.
-    this.props.model.pvwClient.amsService.changeSurface(e.target.value);
-  }
 
   render() {
-    const [surfaceValue] = [this.state.surfaceValue];
+
+    this.buildDrawDialogSpecs();
     //console.log("AMSControlPanel render: ", this.state);
 
     var testy = {hello: 52.6};
