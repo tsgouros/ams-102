@@ -38,15 +38,15 @@ class AMSPlotDialog extends React.Component {
       // the dialog should look like, a collection of objects, each of which
       // has a name to display, a type of widget, the values it can take, and
       // the value that is selected.
-      dialogDescription: this.props.deliverDialogSpec,
-
+      //dialogDescription: this.props.deliverDialogSpec,
+      //title: this.props.buttonLabel,
     };
 
     // This will hold the results of the dialog session.  We have to
     // keep the widget type because there is something odd about the
     // handling of values for the enum type.
     this.dialogResults =
-      this.state.dialogDescription.reduce(function(dialogObj,dialogItem) {
+      this.props.dialogSpec.reduce(function(dialogObj,dialogItem) {
         dialogObj[dialogItem.id] = {
           value: dialogItem.selected,
           widgetType: dialogItem.widgetType,
@@ -54,22 +54,11 @@ class AMSPlotDialog extends React.Component {
         return dialogObj;
       }, {});
 
-    //console.log("dialogResults:", this.dialogResults);
-    //console.log("dialogDescription:", this.dialogDescription);
-
-    // Convert the dialog description into a list of actionable pieces, as
-    // they are expected by the AMSPropertyPanel widget.  This is essentially
-    // just format conversion, plus defining the onChange() function.
-    //this.dialogList = [];
-
-    
-    //console.log("dialogList:", this.dialogList);
-    
     this.properties = {
       input: [
         {
-          title: 'Edit a Visualization',
-          contents: this.generateDialogList(props.deliverDialogSpec),
+          title: props.title,
+          contents: this.generateDialogList(this.props.dialogSpec),
         },
       ],
       // setting this change handler overrides all individual component
@@ -87,24 +76,6 @@ class AMSPlotDialog extends React.Component {
     this.generateDialogList = this.generateDialogList.bind(this);
   }
 
-  // componentWillReceiveProps(nextProps) {
-
-  //   this.properties.input[0].contents =
-  //     this.generateDialogList(nextProps.deliverDialogSpec);
-
-  //   // Fix the 'this' pointer for the onChange() methods.
-  //   for (var i = 0; i < this.properties.input[0].contents.length; i++) {
-  //     // console.log("*contents[",i,"]:", this.properties.input[0].contents[i]);
-  //     this.properties.input[0].contents[i].onChange =
-  //       this.properties.input[0].contents[i].onChange.bind(this);
-  //   }
-
-  //   console.log("AMSPlotDialog.cwrp:", this.properties.input[0].contents);
-    
-  //   this.setState({dialogDescription: nextProps.deliverDialogSpec});
-
-  // }
-  
   generateDialogList(dialogSpec) {
 
     var ds = dialogSpec.reduce(function(dL, dialogItem) {
@@ -144,9 +115,6 @@ class AMSPlotDialog extends React.Component {
           layout: '1',
           help: dialogItem.help,
           componentLabels: [''],
-        },
-        componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-          console.log("in dialog.cwrp:", nextProps, this);
         },
         onChange: function onChange(data) {
           console.log("onChange:", data, this.dialogResults, this);
@@ -194,9 +162,10 @@ class AMSPlotDialog extends React.Component {
   }
 
   render() {
-        
+
+    this.properties.input[0].title = this.props.title;
     this.properties.input[0].contents = 
-      this.generateDialogList(this.state.dialogDescription);
+      this.generateDialogList(this.props.dialogSpec);
     
     console.log("AMSPlotDialog rendering", this.props.buttonLabel, this.properties, this.state);
 

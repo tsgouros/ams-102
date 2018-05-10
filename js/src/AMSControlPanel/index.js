@@ -269,10 +269,12 @@ class AMSControlPanel extends React.Component {
         <center>
         <div style={{width: '100%', display: 'table'}}>
         <AMSPlotDialog buttonLabel="Edit plot descriptions"
-                       deliverDialogSpec={this.vizDialogSpec}
+                       title="Edit plot description"
+                       dialogSpec={this.vizDialogSpec}
                        returnDialogResults={this.returnVizCatalogEntry}/>        
         <AMSPlotDialog buttonLabel="Choose plot to draw"
-                       deliverDialogSpec={this.drawDialogSpec}
+                       title="Select visualization"
+                       dialogSpec={this.drawDialogSpec}
                        returnDialogResults={this.returnDrawCommand}/>        
         <div style={{display: 'table-cell'}}>
         <button onClick={() => this.props.model.pvwClient.amsService.testButton(testy)}>test</button>
