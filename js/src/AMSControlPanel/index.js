@@ -49,11 +49,11 @@ class AMSControlPanel extends React.Component {
 
     // The vizCatalog and dataCatalog are passed back and forth between
     // client and server.  The server has the authoritative dataCatalog, and
-    // we have the authoritative vizCatalog.  These are the state of the
-    // client.
+    // we have the authoritative vizCatalog.  The vizCatalog is the state of
+    // the client and the dataCatalog is part of the server's state.  Thus,
+    // references to the dataCatalog over here go through props.
     this.state = {
       vizCatalog: props.vizCatalog,
-      dataCatalog: props.dataCatalog,
     };
 
     // The dialog specs are built from the client state, to show the user a
@@ -314,7 +314,7 @@ class AMSControlPanel extends React.Component {
     // adjust the list of data sets to correspond to the data catalog (in
     // case it has changed recently).
     this.drawDialogSpec.plotName.ui.domain =
-      Object.keys(this.state.dataCatalog).reduce(function(res, cur) {
+      Object.keys(this.props.dataCatalog).reduce(function(res, cur) {
         res[cur] = cur;
         return res;
       }, {});
@@ -358,6 +358,20 @@ class AMSControlPanel extends React.Component {
     this.buildDrawDialogSpecs();
     //console.log("AMSControlPanel render: ", this.state);
 
+    this.vizDialogSpec.EnumContourVariable.ui.domain =
+      Object.keys(this.props.dataCatalog["m100rpm"].variables).reduce(
+        function(res, cur) {
+          res[cur] = cur;
+          return res;
+        }, {});
+
+    this.vizDialogSpec.EnumColorVariable.ui.domain =
+      Object.keys(this.props.dataCatalog["m100rpm"].variables).reduce(
+        function(res, cur) {
+          res[cur] = cur;
+          return res;
+        }, {});          
+    
     var testy = {hello: 52.6};
     //console.log("gto:", this.props.gto);
 

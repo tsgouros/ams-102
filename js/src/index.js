@@ -57,6 +57,13 @@ var vizCatalog = {
 var dataCatalog = {
   m100rpm: {
     fileName: "100rpm.encas",
+    variables: {
+      pressure: "pressure",
+      uds_0_scalar: "uds_0_scalar",
+      axial_velocity: "axial_velocity",
+      radial_velocity: "radial_velocity",
+      tangential_velocit: "tangential_velocity",
+    }
   },
 };
 
@@ -199,7 +206,7 @@ divRenderer.style.zIndex = '10';
 smartConnect.connect();
 
 function next() {
-  //console.log("hi there", vizCatalog);
+  //console.log("hi there", dataCatalog);
   ReactDOM.render(<AMSControlPanel model={model}
                   vizCatalog={vizCatalog}
                   dataCatalog={dataCatalog}
