@@ -1,16 +1,7 @@
 import 'normalize.css';
 
-import Workbench from 'paraviewweb/src/Component/Native/Workbench';
-import ToggleControl from 'paraviewweb/src/Component/Native/ToggleControl';
-import BGColor from 'paraviewweb/src/Component/Native/BackgroundColor';
-import Spacer from 'paraviewweb/src/Component/Native/Spacer';
-import Composite from 'paraviewweb/src/Component/Native/Composite';
-import ReactAdapter from 'paraviewweb/src/Component/React/ReactAdapter';
-import WorkbenchController from 'paraviewweb/src/Component/React/WorkbenchController';
-
 import { debounce } from 'paraviewweb/src/Common/Misc/Debounce';
 
-//import RemoteRenderer from 'paraviewweb/src/NativeUI/Canvas/RemoteRenderer';
 import VtkRenderer from 'paraviewweb/src/NativeUI/Renderers/VtkRenderer';
 import SizeHelper from 'paraviewweb/src/Common/Misc/SizeHelper';
 import ParaViewWebClient from 'paraviewweb/src/IO/WebSocket/ParaViewWebClient';
@@ -18,16 +9,10 @@ import ParaViewWebClient from 'paraviewweb/src/IO/WebSocket/ParaViewWebClient';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import SmartConnect from 'wslink/src/SmartConnect';
 
-import AMSControlPanel from './AMSControlPanel';
+import AMSPlot from './AMSPlot';
 
-// Create a SmartConnect object.
-const config = { sessionURL: 'ws://localhost:1234/ws' };
-const smartConnect = SmartConnect.newInstance({ config });
-
-const model = {};
-let connectionReady = false;
+const AMSConfig = { sessionURL: 'ws://localhost:1234/ws' };
 
 // To create a visualization, you need a recipe (what kind of plot, what
 // variables, what colors, etc) and some data to which it is to be applied.
@@ -37,19 +22,6 @@ let connectionReady = false;
 // cache, but during a session, the authoritative version is on the client.)
 //
 
-// This is the visualization cookbook, a collection of visualization recipes
-// that can be applied to the data sources.  It is a an association of names
-// and descriptions of visualizations.  This is the authoritative copy,
-// though there is (probably) also a copy on the server.
-var vizCatalog = {
-  "default": {
-    EnumPlotType:  "contour",
-    EnumContourVariable:  "uds_0_scalar",
-    DoubleContourValue:  400,
-    EnumColorVariable: "pressure",
-    CellPlotName: "plot name",
-  }   
-};
 
 // A list of data names and some descriptive information about each data
 // source.  The authoritative copy is over on the server side, but we keep a
@@ -67,6 +39,8 @@ var dataCatalog = {
   },
 };
 
+
+
 // This is the collection of RPC functions supported by the pvpython server.
 // They are fed to the smartConnect function and returned as part of the
 // pvwClient object, which is how they can be accessed henceforward.
@@ -76,7 +50,7 @@ var dataCatalog = {
 // some quirk in the wslink implementation.  There seems to be no limitation
 // on the data types that can be passed.  JS objects wind up as Python dicts
 // over there, for example.
-const amsProtocols = {
+const AMSProtocols = {
   amsService: (session) => {
     return {
       drawLowRPM: () => {
@@ -140,98 +114,37 @@ const amsProtocols = {
   },
 };
 
-// Establish where the SmartConnect object will be attached to the graphical
-// display when it is created.
-smartConnect.onConnectionReady((connection) => {
-  // Attach the client to the global 'model' object so it can be referenced
-  // elsewhere.
-  model.pvwClient =
-    ParaViewWebClient.createClient(connection,
-                                   [
-                                     'MouseHandler',
-                                     'ViewPort',
-                                     'VtkImageDelivery',
-                                   ],
-                                   amsProtocols);
-  // Create a vtk renderer.
-  const renderer = VtkRenderer.newInstance({ client: model.pvwClient });
-
-  // Place it in the container set up for it.
-  renderer.setContainer(divRenderer);
-  // renderer.onImageReady(() => {
-  //   console.log('image ready (for next command)');
-  // });
-  window.renderer = renderer;
-  SizeHelper.onSizeChange(() => {
-    renderer.resize();
-  });
-  SizeHelper.startListening();
-  connectionReady = true;
-
-  // Now that the connection is ready, retrieve the data catalog and the
-  // starter version of the viz catalog.
-  model.pvwClient.amsService.getDataCatalog();
-
-});
-
-function onDrawCommand(drawCommand) {
-  console.log("onDrawCommand is to execute:", drawCommand);
-  model.pvwClient.amsService.executePlot(drawCommand);
-};
 
 const divTitle = document.createElement('div');
+divTitle.id = "divTitle";
 document.body.appendChild(divTitle);
 divTitle.innerHTML = '<h1>&nbsp;&nbsp;&nbsp;Hello Amgen World!</h1>';
-
-document.body.style.padding = '50';
-document.body.style.margin = '50';
-
-const divPreRoot = document.createElement('div');
-divPreRoot.id = "preRoot";
-document.body.appendChild(divPreRoot);
 
 const divRoot = document.createElement('div');
 divRoot.id = "root";
 document.body.appendChild(divRoot);
 
-const divRenderer = document.createElement('div');
-document.body.appendChild(divRenderer);
-
-divRenderer.style.position = 'relative';
-divRenderer.style.width = '100vw';
-divRenderer.style.height = '100vh';
-divRenderer.style.overflow = 'hidden';
-divRenderer.style.zIndex = '10';
-
-smartConnect.connect();
+document.body.style.padding = '50';
+document.body.style.margin = '50';
 
 function next() {
-  //console.log("hi there", dataCatalog);
-  ReactDOM.render(<AMSControlPanel model={model}
-                  vizCatalog={vizCatalog}
-                  dataCatalog={dataCatalog}
-                  executeDrawCommand={onDrawCommand} />,
+  console.log("hi there, about to call render");
+  ReactDOM.render(<AMSPlot
+                     dataCatalog={dataCatalog}
+                     config={AMSConfig}
+                     protocols={AMSProtocols}
+                  />,
                   document.getElementById('root'));
 };
 
 // This may not be necessary, but for some configurations making sure to
 // re-render every now and then, need it or not, is a good idea.  Test to
 // find out.
-setInterval(next, 5000);
-
-// This function's purpose is to make the visualization canvas update when a
-// parameter has been changed or the visualization changes.
-setInterval(function() {
-  if (connectionReady) {
-    model.pvwClient.amsService.heartbeatUpdate();
-  };
-},1000);
+//setInterval(next, 5000);
 
 next();
 
 // TODO:
-//
-// - Hook up plot command and plotting apparatus.
 //
 // - Conditional rendering of visualization editor dialog.
 //
