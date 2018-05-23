@@ -1,3 +1,7 @@
+// This is basically the same as the ParaviewWeb PropertyPanel, copied over
+// here in case of future customization needs.  If it remains unchanged after
+// this comment is added, it should be deleted.
+
 import React from 'react';
 import PropTypes from 'prop-types';
 
@@ -34,7 +38,7 @@ export default class AMSPropertyPanel extends React.Component {
           {property.contents.map(uiContents)}
           </div>
     );
-    
+
     return (
       <section
         className={[this.props.className, style.propertyPanel].join(' ')}
