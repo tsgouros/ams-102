@@ -59,6 +59,8 @@ class AMSControlPanel extends React.Component {
     // The dialog specs are built from the client state, to show the user a
     // menu of options.
     this.drawDialogSpec = {};
+
+
     this.currentData = Object.keys(props.dataCatalog)[0];
 
     this.returnDrawCommand = this.returnDrawCommand.bind(this);
@@ -78,10 +80,11 @@ class AMSControlPanel extends React.Component {
 
 
   buildDrawDialogSpecs() {
-    this.currentViz = Object.keys(this.props.vizCatalog)[0];
     this.drawDialogSpec = {
       plotName: {
-        data: { value: this.currentViz, id: "plotName" },
+        data: { value: (this.currentViz) ? this.currentViz :
+                    Object.keys(this.props.vizCatalog)[0],
+                id: "plotName" },
         widgetType: "enum",
         depth: 1,  // This refers to the order in which the panel elements appear.
         ui: {
@@ -105,7 +108,9 @@ class AMSControlPanel extends React.Component {
         }
       },
       dataSource: {
-        data: { value: this.currentData, id: "dataSource" },
+        data: { value: (this.currentData) ? this.currentData :
+                    Object.keys(this.props.dataCatalog)[0],
+                id: "dataSource" },
         widgetType: "enum",
         depth: 2,
         ui: {
@@ -166,11 +171,9 @@ class AMSControlPanel extends React.Component {
                        closeLabel="Draw"
                        dialogSpec={this.drawDialogSpec}
                        returnDialogResults={this.returnDrawCommand}/>
-        <div style={{display: 'table-cell'}}>
         <button onClick={() => this.props.model.pvwClient.amsService.testButton(testy)}>test</button>
         <button onClick={() => this.props.model.pvwClient.amsService.showTankGeometry()}>tank</button>
         <button onClick={() => this.props.model.pvwClient.amsService.clearAll()}>clear</button>
-        </div>
         </div>
 
         </center>
