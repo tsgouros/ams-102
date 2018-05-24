@@ -173,8 +173,8 @@ class AMSControlPanel extends React.Component {
                        dialogSpec={this.drawDialogSpec}
                        returnDialogResults={this.returnDrawCommand}/>
         <button onClick={() => this.props.model.pvwClient.amsService.testButton(testy)}>test</button>
-        <button onClick={() => this.props.model.pvwClient.amsService.showTankGeometry(props.view)}>tank</button>
-        <button onClick={() => this.props.model.pvwClient.amsService.clearAll(props.view)}>clear</button>
+        <button onClick={() => this.props.model.pvwClient.amsService.showTankGeometry(this.props.view)}>tank</button>
+        <button onClick={() => this.props.model.pvwClient.amsService.clearAll(this.props.view)}>clear</button>
         </div>
 
         </center>

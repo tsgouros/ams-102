@@ -53,38 +53,21 @@ var dataCatalog = {
 const AMSProtocols = {
   amsService: (session) => {
     return {
-      drawLowRPM: () => {
-        session.call('amsprotocol.draw.low.rpm', [])
-          .then((result) => console.log('result: ' + result));
-        console.log("******* pressed low rpm *******");
-      },
 
-      drawHighRPM: () => {
-        session.call('amsprotocol.draw.high.rpm', [])
-          .then((result) => console.log('result: ', result));
-        console.log("******* pressed high rpm *******");
-      },
-
-      showTankGeometry: () => {
-        session.call('amsprotocol.show.tank.geometry', [])
+      showTankGeometry: ( view ) => {
+        session.call('amsprotocol.show.tank.geometry', [ view ])
           .then((result) => console.log('result', result));
         console.log("******* pressed tankgeometry *******");
       },
 
-      clearAll: () => {
-        session.call('amsprotocol.clear.all', [])
+      clearAll: ( view ) => {
+        session.call('amsprotocol.clear.all', [ view ])
           .then((result) => console.log('result', result));
         console.log("******* pressed clear all *******");
       },
 
-      changeSurface: (surfaceValue) => {
-        session.call('amsprotocol.change.surface', [ surfaceValue ])
-          .then((result) => console.log('result: ', result));
-        console.log("******* adjusted number of sides ********");
-      },
-
-      executePlot: (value) => {
-        session.call('amsprotocol.execute.plot', [ value ])
+      executePlot: (view, value) => {
+        session.call('amsprotocol.execute.plot', [ view, value ])
           .then((result) => console.log('result: ' + result));
         console.log("******* execute plot ------>", value, "<<<");
       },
@@ -140,7 +123,7 @@ function next() {
 // This may not be necessary, but for some configurations making sure to
 // re-render every now and then, need it or not, is a good idea.  Test to
 // find out.
-//setInterval(next, 5000);
+setInterval(next, 5000);
 
 next();
 
