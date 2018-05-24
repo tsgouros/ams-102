@@ -43,9 +43,10 @@ class AMSPlot extends React.Component {
       }
     };
 
-    this.secondRendererVisible = false;
+    this.rendererTwoVisible = true;
 
-    this.renderer = {};
+    this.rendererOne = {};
+    this.rendererTwo = {};
 
     // Create our 'smart connection' object using the config sent down
     // via props.
@@ -71,16 +72,25 @@ class AMSPlot extends React.Component {
                                        ],
                                        props.protocols);
       // Create a vtk renderer.
-      this.renderer = VtkRenderer.newInstance({ client: this.model.pvwClient });
+      this.rendererOne = VtkRenderer.newInstance({
+        client: this.model.pvwClient,
+        viewId: 'renderOne'
+      });
+      this.rendererTwo = VtkRenderer.newInstance({
+        client: this.model.pvwClient,
+        viewId: 'renderTwo'
+      });
 
       // Place it in the container set up for it.
-      this.renderer.setContainer(document.getElementById("renderContainerOne"));
+      this.rendererOne.setContainer(document.getElementById("renderContainerOne"));
+      this.rendererTwo.setContainer(document.getElementById("renderContainerTwo"));
       // renderer.onImageReady(() => {
       //   console.log('image ready (for next command)');
       // });
 
       SizeHelper.onSizeChange(() => {
-        this.renderer.resize();
+        this.rendererOne.resize();
+        this.rendererTwo.resize();
       });
       SizeHelper.startListening();
       this.connectionReady = true;
@@ -106,15 +116,21 @@ class AMSPlot extends React.Component {
     this.vizDialogSpec = {};
     this.currentViz = Object.keys(this.vizCatalog)[0];
 
-    this.onDrawCommand = this.onDrawCommand.bind(this);
+    this.onDrawCommandOne = this.onDrawCommandOne.bind(this);
+    this.onDrawCommandTwo = this.onDrawCommandTwo.bind(this);
 
     this.returnVizCatalogEntry = this.returnVizCatalogEntry.bind(this);
     this.buildVizDialogSpecs();
   }
 
-  onDrawCommand(drawCommand) {
+  onDrawCommandOne(drawCommand) {
     console.log("onDrawCommand is to execute:", drawCommand);
-    this.model.pvwClient.amsService.executePlot(drawCommand);
+    this.model.pvwClient.amsService.executePlot('one',drawCommand);
+  }
+
+  onDrawCommandTwo(drawCommand) {
+    console.log("onDrawCommand is to execute:", drawCommand);
+    this.model.pvwClient.amsService.executePlot('two',drawCommand);
   }
 
   buildVizDialogSpecs() {
@@ -326,30 +342,62 @@ class AMSPlot extends React.Component {
           return res;
         }, {});
 
+
+//      <button onClick={() => this.rendererTwoVisible = !this.rendererTwoVisible}>Two</button>
+
+
     return (
-        <div>
+        <div style={{ width: '100vw', display: 'table' }}>
         <AMSPlotDialog buttonLabel="Edit plot descriptions"
                        title="Edit plot descriptions"
                        dialogSpec={this.vizDialogSpec}
                        closeLabel="Save"
                        returnDialogResults={this.returnVizCatalogEntry}
         />
-        <div>
-          <AMSControlPanel model={this.model}
-                           vizCatalog={this.vizCatalog}
-                           dataCatalog={this.props.dataCatalog}
-                           executeDrawCommand={this.onDrawCommand}
-          />
-          <div id="renderContainerOne"
-               style={{position: 'relative',
-                       width: '100vw',
-                       height: '100vh',
-                       overflow: 'hidden',
-                       zIndex: '10',
-                      }}
-          />
-        </div>
-      </div>
+        <div style={{display: 'table-row',
+                     width: '100vw',
+                    }}>
+          <div style={{display: 'table-cell',
+                       width: this.rendererTwoVisible ? '50%' : '100%',
+                      }}>
+            <AMSControlPanel model={this.model}
+                             vizCatalog={this.vizCatalog}
+                             dataCatalog={this.props.dataCatalog}
+                             executeDrawCommand={this.onDrawCommandOne}
+                             view='rendererOne'
+            />
+            <div id="renderContainerOne"
+                 style={{position: 'relative',
+                         width: '100%',
+                         height: '80vh',
+                         overflow: 'hidden',
+                         zIndex: '10',
+                        }}
+            />
+          </div>
+        { this.rendererTwoVisible ? (
+          <div style={{display: 'table-cell',
+                       width: '50%',
+                      }}>
+            <AMSControlPanel model={this.model}
+                             vizCatalog={this.vizCatalog}
+                             dataCatalog={this.props.dataCatalog}
+                             executeDrawCommand={this.onDrawCommandTwo}
+                             view='rendererTwo'
+                             width='50%'
+            />
+            <div id="renderContainerTwo"
+                 style={{position: 'relative',
+                         width: '100%',
+                         height: '80vh',
+                         overflow: 'hidden',
+                         zIndex: '10',
+                        }}
+            />
+          </div>
+        ) : null }
+       </div>
+     </div>
     )
   }
 }

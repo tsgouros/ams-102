@@ -61,7 +61,8 @@ class AMSControlPanel extends React.Component {
     this.drawDialogSpec = {};
 
 
-    this.currentData = Object.keys(props.dataCatalog)[0];
+    if (!this.currentData) this.currentData = Object.keys(props.dataCatalog)[0];
+    if (!this.currentViz) this.currentViz = Object.keys(props.vizCatalog)[0];
 
     this.returnDrawCommand = this.returnDrawCommand.bind(this);
 
@@ -165,15 +166,15 @@ class AMSControlPanel extends React.Component {
 
     return (
         <center>
-        <div style={{width: '100%', display: 'table'}}>
+        <div style={{width: this.props.width, display: 'inline-block'}}>
         <AMSPlotDialog buttonLabel="Choose plot to draw"
                        title="Select visualization"
                        closeLabel="Draw"
                        dialogSpec={this.drawDialogSpec}
                        returnDialogResults={this.returnDrawCommand}/>
         <button onClick={() => this.props.model.pvwClient.amsService.testButton(testy)}>test</button>
-        <button onClick={() => this.props.model.pvwClient.amsService.showTankGeometry()}>tank</button>
-        <button onClick={() => this.props.model.pvwClient.amsService.clearAll()}>clear</button>
+        <button onClick={() => this.props.model.pvwClient.amsService.showTankGeometry(props.view)}>tank</button>
+        <button onClick={() => this.props.model.pvwClient.amsService.clearAll(props.view)}>clear</button>
         </div>
 
         </center>

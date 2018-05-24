@@ -103,13 +103,13 @@ class AMSPlotDialog extends React.Component {
   render() {
 
     this.properties.input[0].title = this.props.title;
-    this.properties.input[0].contents = 
+    this.properties.input[0].contents =
       this.generateDialogList(this.props.dialogSpec);
-    
+
     console.log("AMSPlotDialog rendering", this.props.buttonLabel, this.properties, this.state);
 
     return (
-        <div className="AMSPlotDialog" style={{display: 'table-cell'}}>
+        <div className="AMSPlotDialog" style={{display: 'inline-block'}}>
         <button onClick={this.toggleModal}>
         {this.props.buttonLabel}
         </button>
@@ -122,7 +122,7 @@ class AMSPlotDialog extends React.Component {
         >
 
         <AMSPropertyPanel {...this.properties} />
-      
+
         </Modal>
       </div>
     );
