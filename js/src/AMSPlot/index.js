@@ -13,17 +13,11 @@ import SmartConnect from 'wslink/src/SmartConnect';
 // control panel takes care of what exactly is shown in the render
 // view object.
 
-// Note to me: We need to move the render window and view *down* from
-// the root level into this object.  And then we need to move the
-// "Edit Plot Description" button *up* into this object.  After that,
-// we can experiment with multiple render view canvas objects, which
-// will happen by moving the "Edit Plot Description" button up one
-// more level so there can multiples of this object while only having
-// one of those.
+
 //
 // 1. Move render canvas from above down to here.  DONE
 // 2. Move edit plot description from the control panel to this object. DONE
-// 3. Move render canvas down one more level.
+// 3. Add a second renderer.
 
 
 class AMSPlot extends React.Component {
@@ -49,18 +43,12 @@ class AMSPlot extends React.Component {
       }
     };
 
+    this.secondRendererVisible = false;
+
     this.renderer = {};
 
-    // this.divRenderer = document.createElement('div');
-    // this.divRenderer.id = "divRender";
-    // document.body.appendChild(this.divRenderer);
-
-    // this.divRenderer.style.position = 'relative';
-    // this.divRenderer.style.width = '100vw';
-    // this.divRenderer.style.height = '100vh';
-    // this.divRenderer.style.overflow = 'hidden';
-    // this.divRenderer.style.zIndex = '10';
-
+    // Create our 'smart connection' object using the config sent down
+    // via props.
     const config = props.config;
     this.smartConnect = SmartConnect.newInstance({ config });
     console.log("in AMSPlot constructor:", props, this.smartConnect);
@@ -86,11 +74,11 @@ class AMSPlot extends React.Component {
       this.renderer = VtkRenderer.newInstance({ client: this.model.pvwClient });
 
       // Place it in the container set up for it.
-      this.renderer.setContainer(document.getElementById("renderContainer"));
+      this.renderer.setContainer(document.getElementById("renderContainerOne"));
       // renderer.onImageReady(() => {
       //   console.log('image ready (for next command)');
       // });
-      window.renderer = this.renderer;
+
       SizeHelper.onSizeChange(() => {
         this.renderer.resize();
       });
@@ -352,7 +340,7 @@ class AMSPlot extends React.Component {
                            dataCatalog={this.props.dataCatalog}
                            executeDrawCommand={this.onDrawCommand}
           />
-          <div id="renderContainer"
+          <div id="renderContainerOne"
                style={{position: 'relative',
                        width: '100vw',
                        height: '100vh',
