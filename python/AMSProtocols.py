@@ -135,20 +135,36 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         # them, and so on.
         self.dataCatalog = {}
 
-        
+
+        # This is a set of render views on which things can be drawn.  Think
+        # of these as being attached to different render windows over on the
+        # client.
+        self.renderViews = AMSRenderViewCollection()
+
+        # The collection of data objects.  Each entry is a file, and all the
+        # variables and what-have-you that can be read from it.  The
+        # authoritative version of this collection is over here on the
+        # server.
         self.dataObjects = AMSDataObjectCollection()
-        self.plotCookBook = AMSCookBook()
-        self.currentPlot = AMSPlot(None, None)
+
+        # The variety of ways one might look at all the objects.  The client
+        # can add to this collection, and the authoritative version of the
+        # collection is over there on the client.
+        self.vizCookBook = AMSCookBook()
+
+        # This is a combination of data and viz recipe that makes a single
+        # visualization.
+        self.currentViz = AMSViz(None, None, None)
 
         self.toggle = True
         self.data0on = True
         self.data1on = False
 
         # A time stamp to keep from overloading the server.
-        self.lastTime = 0  
+        self.lastTime = 0
 
         self.debug = True
-        
+
     def printDebug(self):
         if self.debug:
             # This retrieves the name of the calling function.
@@ -158,26 +174,27 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
 
     def initializeData(self, inputDataCatalog):
         """
-        Initialize data from the data catalog.  Show the first one, hide
-        the rest.
+        Initialize data from the data catalog.
         """
-        i = 0
         for entry in inputDataCatalog.keys():
-            self.addObject(entry, AMSDataObject(inputDataCatalog[entry]))
+            self.addObject(entry, \
+                           AMSDataObject(inputDataCatalog[entry], \
+                                         self.renderViews.getPrimary().getRV()))
 
-            if i == 0:
-                self.dataObjects[0].show()
-                self.dataObjects[0].takeStandardView()
-                i += 1
-            else:
-                self.dataObjects[1].hide()
+        self.renderViews.getPrimary().takeStandardView()
 
     def getInput(self):
         return self.dataset
 
     def addObject(self, name, dataObject):
-        self.dataObjects.addObject(name, dataObject)
+        if isinstance(dataObject, AMSDataObject):
+            self.dataObjects.addObject(name, dataObject)
 
+    @exportRPC('amsprotocol.get.view.id')
+    def getViews(self, i):
+        return {
+            "viewID": self.renderViewCollection.getViewID(i)
+        }
 
     @exportRPC("amsprotocol.get.data.catalog")
     def getDataCatalog(self):
@@ -203,42 +220,18 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
                 adHocCatalog[key]["variables"][variable.GetName()] = {
                     "range": variable.GetRange(-1),
                     "components": variable.GetNumberOfComponents() }
-            
+
         return adHocCatalog
-        
-    @exportRPC("amsprotocol.draw.low.rpm")
-    def draw100rpm(self):
-
-        if self.data0on:
-            self.dataObjects[0].hide()
-            self.data0on = False
-        else:
-            self.dataObjects[0].show()
-            self.data0on = True
-
-        self.getApplication().InvokeEvent('UpdateEvent')
-        return "**** executed draw100rpm() ****"
-
-    @exportRPC("amsprotocol.draw.high.rpm")
-    def draw250rpm(self):
-
-        if self.data1on:
-            self.dataObjects[1].hide()
-            self.data1on = False
-        else:
-            self.dataObjects[1].show()
-            self.data1on = True
-
-        self.getApplication().InvokeEvent('UpdateEvent')    
-        return "**** executed draw250rpm() ****"
 
 
     @exportRPC("amsprotocol.show.tank.geometry")
-    def showTankGeometry(self):
+    def showTankGeometry(self, view):
 
-        self.dataObjects[0].toggleTankGeometry()
+        print "View specified:", view
+        self.renderViews.getPrimary().toggleTank()
         self.getApplication().InvokeEvent('UpdateEvent')
-        
+
+
 
     @exportRPC("amsprotocol.heartbeat.update")
     def heartbeatUpdate(self):
@@ -249,51 +242,41 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         """
         self.getApplication().InvokeEvent('UpdateEvent')
         return "heart is beating"
-        
 
-    @exportRPC("amsprotocol.change.surface")
-    def changeSurface(self, arg):
 
-        self.targetVal = float(arg)
-        for obj in self.dataObjects:
-            obj.setIsoSurfaces([self.targetVal])
+    @exportRPC("amsprotocol.execute.viz")
+    def executeViz(self, view, arg):
+        # The arg here is a dict that contains the selected visualization
+        # recipe name, the visualization cookbook, the name of the data
+        # source, which hopefully is an entry in the data catalog.  The
+        # authoritative copy of the data catalog is over here, so need not be
+        # included in the data passed from the client.
+        print "execute.viz", view, arg
 
-        return "******** executed changeSurface with: " + arg + " *******"
-
-    @exportRPC("amsprotocol.execute.plot")
-    def executePlot(self, arg):
-        # The arg here is a dict that contains the selected
-        # visualization recipe name, the visualization cookbook, the
-        # name of the data source, which hopefully is an entry in the
-        # data catalog.  The authoritative copy of the data catalog is
-        # over here, so need not be included in the data passed from
-        # the client.
-        print "execute.plot", arg
-        
         vizName = arg["visualization"]
         vizRecipe = arg["vizCatalog"][vizName]
         dataName = arg["data"]
 
-        # The recipe we're receiving is either not in our current
-        # catalog, or it is, and should be replaced with this one.
-        # Remember, the client has the authoritative recipe
-        # collection.
-        self.plotCookBook.addRecipe(vizName, vizRecipe)
+        # The recipe we're receiving is either not in our current catalog, or
+        # it is and should be replaced with this one.  Remember, the client
+        # has the authoritative recipe collection.
+        self.vizCookBook.addRecipe(vizName, vizRecipe)
 
         if self.debug:
-            self.plotCookBook.printBook()
+            self.vizCookBook.printBook()
 
-        # Create a plot object for the given data set and recipe.
-        self.currentPlot = self.dataObjects.plotData(dataName, vizName, self.plotCookBook)
+        # Select a render view, and create a viz object for it, using the
+        # given data set and recipe.
+        self.renderViews.getPrimary().addViz(self.dataObjects.getObject(dataName), vizName, vizRecipe)
 
-        # Execute that plot object.
-        self.currentPlot.draw()
+        # Execute that viz object.
+        self.renderViews.getPrimary().drawViz()
 
-        # This makes the client update its view.        
+        # This makes the client update its view.
         self.getApplication().InvokeEvent('UpdateEvent')
 
 
-    
+
     @exportRPC("amsprotocol.test.button")
     def testButton(self, arg):
 
@@ -305,12 +288,13 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         return arg
 
     @exportRPC("amsprotocol.clear.all")
-    def clearAll(self):
+    def clearAll(self, view):
 
-        self.currentPlot.clearAll()
+        print "Clear view:", view
+        self.currentViz.clearAll()
         self.getApplication().InvokeEvent('UpdateEvent')
-        
+
 #
 
 
-    
+

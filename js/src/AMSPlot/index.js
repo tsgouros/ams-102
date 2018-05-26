@@ -125,12 +125,12 @@ class AMSPlot extends React.Component {
 
   onDrawCommandOne(drawCommand) {
     console.log("onDrawCommand is to execute:", drawCommand);
-    this.model.pvwClient.amsService.executePlot('one',drawCommand);
+    this.model.pvwClient.amsService.executeViz('one',drawCommand);
   }
 
   onDrawCommandTwo(drawCommand) {
     console.log("onDrawCommand is to execute:", drawCommand);
-    this.model.pvwClient.amsService.executePlot('two',drawCommand);
+    this.model.pvwClient.amsService.executeViz('two',drawCommand);
   }
 
   buildVizDialogSpecs() {

@@ -109,21 +109,139 @@ def ColorBy(rep=None, value=None):
       rep.SetScalarColoring(arrayname, servermanager.GetAssociationFromString(association), component)
     # rep.RescaleTransferFunctionToDataRange()
 
-class AMSPlot(object):
+class AMSRenderView(object):
     """
-    Contains data and a plot recipe.  The view is executed with the
-    execute() method.
+    A VTK render view, along with the plotting apparatus and information
+    about it that is currently being displayed with it.  In our conception
+    of these objects, a render view contains a "viz" object that holds the
+    data being visualized and the recipe used to visualize it.  The render
+    object may or may not be displaying that object, depending on whether
+    the drawViz() method has been called.  (The object itself might be
+    hidden, too, but that's a different detail.)
+
     """
-    def __init__(self, dataObject, plotRecipe):
-        self.dataObject = dataObject
-        self.plotRecipe = plotRecipe
+    def __init__(self):
 
-    def draw(self):
+        self.RV = simple.CreateView("RenderView")
+        self.viewID = self.RV.GetGlobalIDAsString()
+        self.currentViz = None
+        self.tankVisible = False
 
-        if self.plotRecipe.get('EnumPlotType') == 'contour':
-            self.makeContour()
+    def getRV(self):
+        return self.RV
+
+    def getID(self):
+        return self.RV.GetGlobalIDAsString()
+
+    def link(self, renderViewToLink):
+        simple.AddCameraLink(renderViewToLink, self.RV, self.viewID + "LINK")
+
+    def addViz(self, dataObject, vizName, vizRecipe):
+        print "addViz:", dataObject, vizName, vizRecipe
+        if isinstance(dataObject, AMSDataObject) and \
+           isinstance(vizRecipe, dict):
+            self.currentViz = AMSViz(dataObject, vizName, vizRecipe)
+            self.tankVisible = False
         else:
-            self.makeStream()
+            print "bad viz argument"
+            exit()
+
+    def drawViz(self):
+        if self.currentViz:
+            self.currentViz.draw(self.RV)
+
+    def drawTank(self):
+        if self.currentViz:
+            self.currentViz.drawTankGeometry(self.RV)
+            self.tankVisible = True
+
+    def eraseTank(self):
+        if self.currentViz:
+            self.currentViz.eraseTankGeometry(self.RV)
+            self.tankVisible = False
+
+    def toggleTank(self):
+        if self.tankVisible:
+            self.eraseTank()
+        else:
+            self.drawTank()
+
+    def takeStandardView(self):
+
+        # A standard camera placement, arbitrarily chosen.  Choose another
+        # if you like.
+        self.RV.CameraPosition = [1.305, -1.323, -0.0171]
+        self.RV.CameraFocalPoint = [-0.0524, 0.0326, -0.302]
+        self.RV.CameraViewUp = [-0.505, -0.338, 0.793]
+        self.RV.CameraParallelScale = 0.502
+        self.RV.Update()
+
+
+
+class AMSRenderViewCollection(object):
+
+    """
+    A collection of render views, all linked together, so they should all
+    have the same viewing position.
+    """
+    def __init__(self):
+        self.renderList = []
+
+        # There will always be the first render view, and we call it the
+        # primary.
+        self.addView()
+
+    def __getitem__(self, i):
+        if isinstance(i, (int, long)):
+            return self.renderList[i]
+        else:
+            return None
+
+    def addView(self):
+        self.renderList.append(AMSRenderView())
+
+        # If this is not the first, link it to a previous one.
+        i = len(self.renderList) - 1
+        if i > 1:
+            self.renderList[i].link(self.renderList[i - 1])
+
+        return self.renderList[i]
+
+    def getView(self, i):
+        return self.renderList[i]
+
+    def getPrimary(self):
+        return self.renderList[0]
+
+
+
+# view1 = simple.CreateView("myfirstview")
+# view2 = simple.CreateView("mysecondview")
+# simple.AddCameraLink(view1, view2, "arbitraryNameOfLink")
+
+
+
+
+class AMSViz(object):
+    """
+    Contains data to visualize and a plot recipe.  The visualization is
+    executed with the draw() method.  This is meant to be kept as part of a
+    render view object, to represent what is visualized at the moment.
+
+    """
+    def __init__(self, dataObject, vizName, vizRecipe):
+        self.dataObject = dataObject
+        self.vizName = vizName
+        self.vizRecipe = vizRecipe
+
+        self.debug = True
+
+    def draw(self, RV):
+
+        if self.vizRecipe.get('EnumPlotType') == 'contour':
+            self.makeContour(RV)
+        else:
+            self.makeStream(RV)
 
         simple.Render()
 
@@ -135,51 +253,51 @@ class AMSPlot(object):
     def clearAll(self):
         for f in simple.GetSources().values():
             simple.Delete(f)
-            
-            
-    def makeContour(self):
+
+
+    def makeContour(self, RV):
 
         # get color transfer function/color map for the data to color with.
-        dataLUT = simple.GetColorTransferFunction(self.plotRecipe.get('EnumColorVariable'))
+        dataLUT = simple.GetColorTransferFunction(self.vizRecipe.get('EnumColorVariable'))
 
         # create a new 'Contour'
         contour = simple.Contour(Input=self.dataObject.getData())
 
-        #print "DoubleContourValue", self.plotRecipe.get('DoubleContourValue')
-        #print "EnumContourVariable", self.plotRecipe.get('EnumContourVariable')
+        #print "DoubleContourValue", self.vizRecipe.get('DoubleContourValue')
+        #print "EnumContourVariable", self.vizRecipe.get('EnumContourVariable')
         # Properties modified on contour
-        #contour.ContourBy = ['POINTS', self.plotRecipe.get('enum.contour.variable')]
+        #contour.ContourBy = ['POINTS', self.vizRecipe.get('enum.contour.variable')]
         contour.ContourBy = ['POINTS', 'uds_0_scalar']
-        contour.Isosurfaces = self.plotRecipe.get('DoubleContourValue')
+        contour.Isosurfaces = self.vizRecipe.get('DoubleContourValue')
 
 
         # show data in view
-        contourDisplay = simple.Show(contour, self.dataObject.renderView)
+        contourDisplay = simple.Show(contour, RV)
         # trace defaults for the display properties.
         contourDisplay.Representation = 'Surface'
 
         # show color bar/color legend
-        contourDisplay.SetScalarBarVisibility(self.dataObject.renderView, True)
+        contourDisplay.SetScalarBarVisibility(RV, True)
 
         # set scalar coloring
-        ColorBy(contourDisplay, ('POINTS', self.plotRecipe.get('EnumColorVariable'), 'Magnitude'))
+        ColorBy(contourDisplay, ('POINTS', self.vizRecipe.get('EnumColorVariable'), 'Magnitude'))
 
         # Hide the scalar bar for this color map if no visible data is
         # colored by it.
-        simple.HideScalarBarIfNotNeeded(dataLUT, self.dataObject.renderView)
+        simple.HideScalarBarIfNotNeeded(dataLUT, RV)
 
         # rescale color and/or opacity maps used to include current data range
         contourDisplay.RescaleTransferFunctionToDataRange(True, False)
 
         # reset view to fit data
-        self.dataObject.renderView.ResetCamera()
+        RV.ResetCamera()
 
-        self.dataObject.renderView.Update()
+        RV.Update()
 
-    def makeStream(self):
+    def makeStream(self, RV):
 
         # get color transfer function/color map for the data to color with.
-        dataLUT = simple.GetColorTransferFunction(self.plotRecipe.get('EnumColorVariable'))
+        dataLUT = simple.GetColorTransferFunction(self.vizRecipe.get('EnumColorVariable'))
 
         # create a new 'Stream Tracer'
         streamTracer = simple.StreamTracer(Input=self.dataObject.getData(),
@@ -192,59 +310,59 @@ class AMSPlot(object):
         streamTracer.MaximumSteps = 600
 
         # show data in view
-        streamTracerDisplay = simple.Show(streamTracer, self.dataObject.renderView)
+        streamTracerDisplay = simple.Show(streamTracer, RV)
         # trace defaults for the display properties.
         streamTracerDisplay.Representation = 'Surface'
 
         # show color bar/color legend
-        streamTracerDisplay.SetScalarBarVisibility(self.dataObject.renderView, False)
+        streamTracerDisplay.SetScalarBarVisibility(RV, False)
 
         # update the view to ensure updated data information
-        self.dataObject.renderView.Update()
+        RV.Update()
 
         # create a new 'Ribbon'
         ribbon = simple.Ribbon(Input=streamTracer)
 
         # Properties modified on ribbon
-        ribbon.Scalars = ['POINTS', self.plotRecipe.get('EnumColorVariable')]
+        ribbon.Scalars = ['POINTS', self.vizRecipe.get('EnumColorVariable')]
 
         # show data in view
-        ribbonDisplay = simple.Show(ribbon, self.dataObject.renderView)
+        ribbonDisplay = simple.Show(ribbon, RV)
         # trace defaults for the display properties.
         ribbonDisplay.Representation = 'Surface'
 
         # hide data in view
-        simple.Hide(streamTracer, self.dataObject.renderView)
+        simple.Hide(streamTracer, RV)
 
         # show color bar/color legend
-        ribbonDisplay.SetScalarBarVisibility(self.dataObject.renderView, True)
+        ribbonDisplay.SetScalarBarVisibility(RV, True)
 
         # update the view to ensure updated data information
-        self.dataObject.renderView.Update()
+        RV.Update()
 
         # set scalar coloring
-        ColorBy(ribbonDisplay, ('POINTS', self.plotRecipe.get('EnumColorVariable')))
+        ColorBy(ribbonDisplay, ('POINTS', self.vizRecipe.get('EnumColorVariable')))
 
         # Hide the scalar bar for this color map if no visible data is
         # colored by it.
-        simple.HideScalarBarIfNotNeeded(dataLUT, self.dataObject.renderView)
+        simple.HideScalarBarIfNotNeeded(dataLUT, RV)
 
         # rescale color and/or opacity maps used to include current data range
         ribbonDisplay.RescaleTransferFunctionToDataRange(True, False)
 
         # show color bar/color legend
-        ribbonDisplay.SetScalarBarVisibility(self.dataObject.renderView, True)
+        ribbonDisplay.SetScalarBarVisibility(RV, True)
 
         # get color transfer function/color map for 'uds_0_scalar'
-        colorLUT = simple.GetColorTransferFunction(self.plotRecipe.get('EnumColorVariable'))
+        colorLUT = simple.GetColorTransferFunction(self.vizRecipe.get('EnumColorVariable'))
 
         # Properties modified on ribbon
         ribbon.Width = 0.003
 
-        self.dataObject.renderView.ResetCamera()
-    
+        RV.ResetCamera()
+
         # update the view to ensure updated data information
-        self.dataObject.renderView.Update()
+        RV.Update()
 
         # set active source
         simple.SetActiveSource(streamTracer)
@@ -253,28 +371,101 @@ class AMSPlot(object):
         streamTracer.SeedType.Resolution = 200
 
         # update the view to ensure updated data information
-        self.dataObject.renderView.Update()
+        RV.Update()
+
+    def drawTankGeometry(self, RV):
+        self.printDebug()
+
+        # create a new 'Contour'
+        self.tankGeometry = simple.Contour(Input=self.dataObject.caseData)
+        self.tankGeometry.PointMergeMethod = 'Uniform Binning'
+
+        # Properties modified on self.tankGeometry
+        self.tankGeometry.ContourBy = ['POINTS', 'wall_shear']
+        self.tankGeometry.Isosurfaces = [0.0002]
+
+        # show data in view
+        self.tankGeometryDisplay = simple.Show(self.tankGeometry, RV)
+
+        ##### GET RID OF THIS IF FEASIBLE   vvvv
+        # trace defaults for the display properties.
+        self.tankGeometryDisplay.Representation = 'Surface'
+        self.tankGeometryDisplay.ColorArrayName = [None, '']
+        self.tankGeometryDisplay.OSPRayScaleFunction = 'PiecewiseFunction'
+        self.tankGeometryDisplay.SelectOrientationVectors = 'None'
+        self.tankGeometryDisplay.ScaleFactor = -2.0000000000000002e+298
+        self.tankGeometryDisplay.SelectScaleArray = 'None'
+        self.tankGeometryDisplay.GlyphType = 'Arrow'
+        self.tankGeometryDisplay.GlyphTableIndexArray = 'None'
+        self.tankGeometryDisplay.GaussianRadius = -1.0000000000000001e+298
+        self.tankGeometryDisplay.SetScaleArray = [None, '']
+        self.tankGeometryDisplay.ScaleTransferFunction = 'PiecewiseFunction'
+        self.tankGeometryDisplay.OpacityArray = [None, '']
+        self.tankGeometryDisplay.OpacityTransferFunction = 'PiecewiseFunction'
+        self.tankGeometryDisplay.DataAxesGrid = 'GridAxesRepresentation'
+        self.tankGeometryDisplay.SelectionCellLabelFontFile = ''
+        self.tankGeometryDisplay.SelectionPointLabelFontFile = ''
+        self.tankGeometryDisplay.PolarAxes = 'PolarAxesRepresentation'
+
+        # init the 'GridAxesRepresentation' selected for 'DataAxesGrid'
+        self.tankGeometryDisplay.DataAxesGrid.XTitleFontFile = ''
+        self.tankGeometryDisplay.DataAxesGrid.YTitleFontFile = ''
+        self.tankGeometryDisplay.DataAxesGrid.ZTitleFontFile = ''
+        self.tankGeometryDisplay.DataAxesGrid.XLabelFontFile = ''
+        self.tankGeometryDisplay.DataAxesGrid.YLabelFontFile = ''
+        self.tankGeometryDisplay.DataAxesGrid.ZLabelFontFile = ''
+
+        # init the 'PolarAxesRepresentation' selected for 'PolarAxes'
+        self.tankGeometryDisplay.PolarAxes.PolarAxisTitleFontFile = ''
+        self.tankGeometryDisplay.PolarAxes.PolarAxisLabelFontFile = ''
+        self.tankGeometryDisplay.PolarAxes.LastRadialAxisTextFontFile = ''
+        self.tankGeometryDisplay.PolarAxes.SecondaryRadialAxesTextFontFile = ''
+        ######## ^^^^^^^^ IS THIS NECESSARY? I DON'T THINK SO.
+
+        # Properties modified on tankGeometryDisplay
+        self.tankGeometryDisplay.Opacity = 0.1
+
+        # change solid color
+        self.tankGeometryDisplay.DiffuseColor = [0.0, 0.5, 0.5]
+
+        self.tankGeometryDisplay = simple.Show(self.tankGeometry, RV)
+        RV.Update()
+
+    def eraseTankGeometry(self, RV):
+        self.tankGeometryDisplay = simple.Hide(self.tankGeometry, RV)
+        RV.Update()
 
 
-    
+    def printDebug(self):
+        if self.debug:
+            # This retrieves the name of the calling function.
+            # 0:filename, 1:line number, 2:function, 3:calling string
+            functionName = traceback.extract_stack(None, 2)[0][2]
+            print("calling " + functionName + " for " + self.vizName + " on " + self.dataObject.getName())
+
+
+
 class AMSDataObject(object):
     """
     Contains a data file name and some descriptive material about it.
+
+    Initializing the data seems to require having a render view on hand, but
+    this isn't really a part of this object.  So it is part of the
+    initialization, but is not kept around.
+
     """
-    def __init__(self, dataCatalogEntry):
+    def __init__(self, dataCatalogEntry, RV):
 
         self.debug = True
-        
+
         self.dataFile = dataCatalogEntry["fileName"]
         self.description = dataCatalogEntry["description"]
-        
-        self.renderView = simple.GetActiveViewOrCreate('RenderView')
 
         # create a new 'EnSight Reader'
         self.caseData = simple.EnSightReader(CaseFileName=self.dataFile)
 
         # show data in view
-        self.caseDataDisplay = simple.Show(self.caseData, self.renderView)
+        self.caseDataDisplay = simple.Show(self.caseData, RV)
 
         # Get variables and range data from the newly-opened file.
         self.variables = {}  #***************************TBD
@@ -283,20 +474,17 @@ class AMSDataObject(object):
         self.caseDataDisplay.Representation = 'Surface'
 
         # show color bar/color legend
-        self.caseDataDisplay.SetScalarBarVisibility(self.renderView, True)
+        self.caseDataDisplay.SetScalarBarVisibility(RV, True)
 
         # hide data in view
-        simple.Hide(self.caseData, self.renderView)
+        simple.Hide(self.caseData, RV)
 
         # update the view to ensure updated data information
-        self.renderView.Update()
-
-        self.tankGeometryShown = False
-        self.tankGeometryInit = False
+        RV.Update()
 
     def getName(self):
         return self.dataFile
-        
+
     def printDebug(self):
         if self.debug:
             # This retrieves the name of the calling function.
@@ -307,108 +495,21 @@ class AMSDataObject(object):
     def getData(self):
         return self.caseData
 
-    def getDataDisplay(self):
-        return self.caseDataDisplay
-
     def getDescription(self):
         return self.description
 
     def getDataFile(self):
         return self.dataFile
-    
+
     def getVariables(self):
         return self.variables
-    
+
     def setIsoSurfaces(self, isoSurfaces):
         self.isoSurfaces = isoSurfaces
 
-    
-    def toggleTankGeometry(self):
-        self.printDebug()
-
-        if not self.tankGeometryInit:
-
-            # create a new 'Contour'
-            self.contour2 = simple.Contour(Input=self.caseData)
-            self.contour2.PointMergeMethod = 'Uniform Binning'
-
-            # Properties modified on self.contour2
-            self.contour2.ContourBy = ['POINTS', 'wall_shear']
-            self.contour2.Isosurfaces = [0.0002]
-
-            # show data in view
-            self.contour2Display = simple.Show(self.contour2, self.renderView)
-
-            # trace defaults for the display properties.
-            self.contour2Display.Representation = 'Surface'
-            self.contour2Display.ColorArrayName = [None, '']
-            self.contour2Display.OSPRayScaleFunction = 'PiecewiseFunction'
-            self.contour2Display.SelectOrientationVectors = 'None'
-            self.contour2Display.ScaleFactor = -2.0000000000000002e+298
-            self.contour2Display.SelectScaleArray = 'None'
-            self.contour2Display.GlyphType = 'Arrow'
-            self.contour2Display.GlyphTableIndexArray = 'None'
-            self.contour2Display.GaussianRadius = -1.0000000000000001e+298
-            self.contour2Display.SetScaleArray = [None, '']
-            self.contour2Display.ScaleTransferFunction = 'PiecewiseFunction'
-            self.contour2Display.OpacityArray = [None, '']
-            self.contour2Display.OpacityTransferFunction = 'PiecewiseFunction'
-            self.contour2Display.DataAxesGrid = 'GridAxesRepresentation'
-            self.contour2Display.SelectionCellLabelFontFile = ''
-            self.contour2Display.SelectionPointLabelFontFile = ''
-            self.contour2Display.PolarAxes = 'PolarAxesRepresentation'
-
-            # init the 'GridAxesRepresentation' selected for 'DataAxesGrid'
-            self.contour2Display.DataAxesGrid.XTitleFontFile = ''
-            self.contour2Display.DataAxesGrid.YTitleFontFile = ''
-            self.contour2Display.DataAxesGrid.ZTitleFontFile = ''
-            self.contour2Display.DataAxesGrid.XLabelFontFile = ''
-            self.contour2Display.DataAxesGrid.YLabelFontFile = ''
-            self.contour2Display.DataAxesGrid.ZLabelFontFile = ''
-
-            # init the 'PolarAxesRepresentation' selected for 'PolarAxes'
-            self.contour2Display.PolarAxes.PolarAxisTitleFontFile = ''
-            self.contour2Display.PolarAxes.PolarAxisLabelFontFile = ''
-            self.contour2Display.PolarAxes.LastRadialAxisTextFontFile = ''
-            self.contour2Display.PolarAxes.SecondaryRadialAxesTextFontFile = ''
-
-            # Properties modified on contour2Display
-            self.contour2Display.Opacity = 0.1
-
-            # change solid color
-            self.contour2Display.DiffuseColor = [0.0, 0.5, 0.5]
-
-            self.tankGeometryInit = True
-            self.tankGeometryShown = True
-
-        else:
-            if self.tankGeometryShown:
-                self.contour2Display = simple.Hide(self.contour2, self.renderView)
-                self.tankGeometryShown = False
-            else:
-                self.contour2Display = simple.Show(self.contour2, self.renderView)
-                self.tankGeometryShown = True
-
-        self.renderView.Update()
-
-    def hide(self):
-        return
-
-    def show(self):
-        return
-
-    def takeStandardView(self):
-
-        # current camera placement for renderView1
-        self.renderView.CameraPosition = [1.3051878628081257, -1.32358496378265, -0.017141331493847792]
-        self.renderView.CameraFocalPoint = [-0.052487090229988105, 0.03264869749546056, -0.3026974257081747]
-        self.renderView.CameraViewUp = [-0.5051031518286454, -0.33848038039346323, 0.7939155106820026]
-        self.renderView.CameraParallelScale = 0.502148522908922
-        self.renderView.Update()
-        ##################################################
 
 
-        
+
 class AMSDataObjectCollection(object):
     """
     A whole slew of data objects, organized by name.
@@ -426,7 +527,7 @@ class AMSDataObjectCollection(object):
         else:
             return self.index[i]
 
-        
+
     def addObject(self, name, dataObject):
         self.index[name] = dataObject
 
@@ -454,38 +555,38 @@ class AMSDataObjectCollection(object):
         recipe.  Note that you have to execute the 'draw()' method of the plot
         object to see anything.
         """
-        return AMSPlot(self.index[name], cookBook.getRecipe(recipeName))
+        return AMSViz(self.index[name], cookBook.getRecipe(recipeName))
 
-        
-class AMSPlotRecipe(object):
+
+class AMSVizRecipe(object):
     """
     A description of a plot.  This is a small dict that contains the
     names of values needed for the visualizations.  The names of the
     values are the ids assigned to them in the dialog spec on the
     client side, which is why they might seem a little odd.
     """
-    def __init__(self, plotRecipe):
-        self.plotRecipe = plotRecipe
+    def __init__(self, vizRecipe):
+        self.vizRecipe = vizRecipe
 
     def getName(self):
-        return self.plotRecipe['CellPlotName']
-        
+        return self.vizRecipe['CellPlotName']
+
     def get(self, item):
         """
         Return one of the items in a plot recipe.
         """
-        return self.plotRecipe[item]
+        return self.vizRecipe[item]
 
     def printRecipe(self):
         # Find length of longest key, to left-justify the recipe ingredients.
         maxl = 0
-        for k in self.plotRecipe.keys():
+        for k in self.vizRecipe.keys():
             maxl = max(maxl, len(k))
-        
-        for k in self.plotRecipe.keys():
-            print "    {0}{1}  :  {2}".format(k, " "*(maxl-len(k)), self.plotRecipe[k])
 
-        
+        for k in self.vizRecipe.keys():
+            print "    {0}{1}  :  {2}".format(k, " "*(maxl-len(k)), self.vizRecipe[k])
+
+
 class AMSCookBook(object):
     """
     A collection of recipes, organized by name.
@@ -493,11 +594,11 @@ class AMSCookBook(object):
     def __init__(self):
         self.index = dict()
 
-#    def addRecipe(self, plotRecipe):
-#        self.index[plotRecipe.getName()] = plotRecipe
+#    def addRecipe(self, vizRecipe):
+#        self.index[vizRecipe.getName()] = vizRecipe
 
-    def addRecipe(self, name, plotRecipe):
-        self.index[name] = AMSPlotRecipe(plotRecipe)
+    def addRecipe(self, name, vizRecipe):
+        self.index[name] = AMSVizRecipe(vizRecipe)
 
     def getRecipe(self, name):
         return self.index[name]
@@ -507,6 +608,7 @@ class AMSCookBook(object):
         for k in self.index.keys():
             print "  Recipe name: ", k
             self.index[k].printRecipe()
+
 
 
 
@@ -557,3 +659,8 @@ caseFileH = '/Users/tomfool/tech/18/amgen/ams-102-AgileViz/EnSight/mat-viz-mofTF
 # >>> d.caseData.PointData["velocity"].GetDataType()
 # 10
 # >>>
+
+# view1 = simple.CreateView("myfirstview")
+# view2 = simple.CreateView("mysecondview")
+# simple.AddCameraLink(view1, view2, "arbitraryNameOfLink")
+

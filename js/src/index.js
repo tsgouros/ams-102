@@ -66,10 +66,10 @@ const AMSProtocols = {
         console.log("******* pressed clear all *******");
       },
 
-      executePlot: (view, value) => {
-        session.call('amsprotocol.execute.plot', [ view, value ])
+      executeViz: (view, value) => {
+        session.call('amsprotocol.execute.viz', [ view, value ])
           .then((result) => console.log('result: ' + result));
-        console.log("******* execute plot ------>", value, "<<<");
+        console.log("******* execute viz ------>", view, value, "<<<");
       },
 
       getDataCatalog: () => {
