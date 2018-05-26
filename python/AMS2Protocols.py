@@ -387,45 +387,13 @@ class AMSViz(object):
         # show data in view
         self.tankGeometryDisplay = simple.Show(self.tankGeometry, RV)
 
-        ##### GET RID OF THIS IF FEASIBLE   vvvv
-        # trace defaults for the display properties.
+        # Some display properties.
         self.tankGeometryDisplay.Representation = 'Surface'
         self.tankGeometryDisplay.ColorArrayName = [None, '']
         self.tankGeometryDisplay.OSPRayScaleFunction = 'PiecewiseFunction'
-        self.tankGeometryDisplay.SelectOrientationVectors = 'None'
-        self.tankGeometryDisplay.ScaleFactor = -2.0000000000000002e+298
-        self.tankGeometryDisplay.SelectScaleArray = 'None'
-        self.tankGeometryDisplay.GlyphType = 'Arrow'
-        self.tankGeometryDisplay.GlyphTableIndexArray = 'None'
-        self.tankGeometryDisplay.GaussianRadius = -1.0000000000000001e+298
-        self.tankGeometryDisplay.SetScaleArray = [None, '']
-        self.tankGeometryDisplay.ScaleTransferFunction = 'PiecewiseFunction'
         self.tankGeometryDisplay.OpacityArray = [None, '']
         self.tankGeometryDisplay.OpacityTransferFunction = 'PiecewiseFunction'
-        self.tankGeometryDisplay.DataAxesGrid = 'GridAxesRepresentation'
-        self.tankGeometryDisplay.SelectionCellLabelFontFile = ''
-        self.tankGeometryDisplay.SelectionPointLabelFontFile = ''
-        self.tankGeometryDisplay.PolarAxes = 'PolarAxesRepresentation'
-
-        # init the 'GridAxesRepresentation' selected for 'DataAxesGrid'
-        self.tankGeometryDisplay.DataAxesGrid.XTitleFontFile = ''
-        self.tankGeometryDisplay.DataAxesGrid.YTitleFontFile = ''
-        self.tankGeometryDisplay.DataAxesGrid.ZTitleFontFile = ''
-        self.tankGeometryDisplay.DataAxesGrid.XLabelFontFile = ''
-        self.tankGeometryDisplay.DataAxesGrid.YLabelFontFile = ''
-        self.tankGeometryDisplay.DataAxesGrid.ZLabelFontFile = ''
-
-        # init the 'PolarAxesRepresentation' selected for 'PolarAxes'
-        self.tankGeometryDisplay.PolarAxes.PolarAxisTitleFontFile = ''
-        self.tankGeometryDisplay.PolarAxes.PolarAxisLabelFontFile = ''
-        self.tankGeometryDisplay.PolarAxes.LastRadialAxisTextFontFile = ''
-        self.tankGeometryDisplay.PolarAxes.SecondaryRadialAxesTextFontFile = ''
-        ######## ^^^^^^^^ IS THIS NECESSARY? I DON'T THINK SO.
-
-        # Properties modified on tankGeometryDisplay
         self.tankGeometryDisplay.Opacity = 0.1
-
-        # change solid color
         self.tankGeometryDisplay.DiffuseColor = [0.0, 0.5, 0.5]
 
         self.tankGeometryDisplay = simple.Show(self.tankGeometry, RV)
