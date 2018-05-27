@@ -190,11 +190,9 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         if isinstance(dataObject, AMSDataObject):
             self.dataObjects.addObject(name, dataObject)
 
-    @exportRPC('amsprotocol.get.view.id')
-    def getViews(self, i):
-        return {
-            "viewID": self.renderViewCollection.getViewID(i)
-        }
+    @exportRPC('amsprotocol.get.render.view.ids')
+    def getViews(self):
+        return self.renderViews.getIDList()
 
     @exportRPC("amsprotocol.get.data.catalog")
     def getDataCatalog(self):

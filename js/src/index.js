@@ -39,7 +39,7 @@ var dataCatalog = {
   },
 };
 
-
+var renderViewIDList = [];
 
 // This is the collection of RPC functions supported by the pvpython server.
 // They are fed to the smartConnect function and returned as part of the
@@ -53,6 +53,15 @@ var dataCatalog = {
 const AMSProtocols = {
   amsService: (session) => {
     return {
+
+      getRenderViewIDs: () => {
+        session.call('amsprotocol.get.render.view.ids', [])
+          .then((result) => {
+            renderViewIDList = result;
+            console.log('----- returned id list:', result);
+          });
+        console.log("------- getting render view ids --------");
+      },
 
       showTankGeometry: ( view ) => {
         session.call('amsprotocol.show.tank.geometry', [ view ])
@@ -82,10 +91,10 @@ const AMSProtocols = {
       },
 
       testButton: (testValue) => {
-        session.call('amsprotocol.test.button', [ testValue ])
+        session.call('amsprotocol.get.render.view.ids', [ ])
           .then((result) => {
-            console.log('result: ', result.hello);
-            vizCatalog = result;
+            console.log('**** result: ', result);
+            renderViewIDList = result;
           });
         console.log("******* testbutton ------>", testValue);
       },

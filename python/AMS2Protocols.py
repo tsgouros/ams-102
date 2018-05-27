@@ -213,6 +213,8 @@ class AMSRenderViewCollection(object):
     def getPrimary(self):
         return self.renderList[0]
 
+    def getIDList(self):
+        return [f.getID() for f in self.renderList]
 
 
 # view1 = simple.CreateView("myfirstview")
