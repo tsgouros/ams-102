@@ -125,6 +125,7 @@ function next() {
                      dataCatalog={dataCatalog}
                      config={AMSConfig}
                      protocols={AMSProtocols}
+                     viewIDList={renderViewIDList}
                   />,
                   document.getElementById('root'));
 };

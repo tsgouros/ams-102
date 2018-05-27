@@ -71,14 +71,17 @@ class AMSPlot extends React.Component {
                                          'VtkImageDelivery',
                                        ],
                                        props.protocols);
+
+      this.model.pvwClient.amsService.getRenderViewIDs();
+
       // Create a vtk renderer.
       this.rendererOne = VtkRenderer.newInstance({
         client: this.model.pvwClient,
-        viewId: 'renderOne'
+        viewId: -1
       });
       this.rendererTwo = VtkRenderer.newInstance({
         client: this.model.pvwClient,
-        viewId: 'renderTwo'
+        viewId: -1
       });
 
       // Place it in the container set up for it.
@@ -124,13 +127,23 @@ class AMSPlot extends React.Component {
   }
 
   onDrawCommandOne(drawCommand) {
-    console.log("onDrawCommand is to execute:", drawCommand);
-    this.model.pvwClient.amsService.executeViz('one',drawCommand);
+    if (this.props.viewIDList) {
+      console.log("onDrawCommandOne is to execute:", drawCommand);
+      this.model.pvwClient.amsService.executeViz(this.props.viewIDList[0],
+                                                 drawCommand);
+    } else {
+      console.log("no view to draw with");
+    }
   }
 
   onDrawCommandTwo(drawCommand) {
-    console.log("onDrawCommand is to execute:", drawCommand);
-    this.model.pvwClient.amsService.executeViz('two',drawCommand);
+    if (this.props.viewIDList) {
+      console.log("onDrawCommandTwo is to execute:", drawCommand);
+      this.model.pvwClient.amsService.executeViz(this.props.viewIDList[1],
+                                                 drawCommand);
+    } else {
+      console.log("no view to draw with");
+    }
   }
 
   buildVizDialogSpecs() {

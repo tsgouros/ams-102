@@ -209,7 +209,7 @@ class AMSRenderViewCollection(object):
     def addView(self):
 
         newView = AMSRenderView()
-        newKey = int(newView.getID())
+        newKey = newView.getID()
         self.renderViews[ newKey ] = newView
 
         # If this is not the first, link it to a previous one.
