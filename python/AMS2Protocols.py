@@ -166,6 +166,9 @@ class AMSRenderView(object):
         else:
             self.drawTank()
 
+    def makeActive(self):
+        simple.SetActiveView(self.RV)
+
     def takeStandardView(self):
 
         # A standard camera placement, arbitrarily chosen.  Choose another
@@ -185,36 +188,50 @@ class AMSRenderViewCollection(object):
     have the same viewing position.
     """
     def __init__(self):
-        self.renderList = []
+        self.renderViews = {}
 
         # There will always be the first render view, and we call it the
         # primary.
+        self.primaryID = self.addView()
+
+        # For now, we'll always have at least two render views.
         self.addView()
+
+        # But make the primary one active.
+        self.getPrimary().makeActive()
 
     def __getitem__(self, i):
         if isinstance(i, (int, long)):
-            return self.renderList[i]
+            return self.renderViews[self.renderViews.keys()[i]]
         else:
             return None
 
     def addView(self):
-        self.renderList.append(AMSRenderView())
+
+        newView = AMSRenderView()
+        newKey = int(newView.getID())
+        self.renderViews[ newKey ] = newView
 
         # If this is not the first, link it to a previous one.
-        i = len(self.renderList) - 1
-        if i > 1:
-            self.renderList[i].link(self.renderList[i - 1])
+        # i = len(self.renderList) - 1
+        # if i > 1:
+        #     self.renderList[i].link(self.renderList[i - 1])
 
-        return self.renderList[i]
+        return newKey
 
     def getView(self, i):
-        return self.renderList[i]
+        return self.renderViews[i]
 
     def getPrimary(self):
-        return self.renderList[0]
+        return self.renderViews[ self.primaryID ]
 
     def getIDList(self):
-        return [f.getID() for f in self.renderList]
+        keyList = self.renderViews.keys()
+
+        # We promise the primary key will always be first in the list.
+        keyList.remove(self.primaryID)
+        keyList.insert(0, self.primaryID)
+        return keyList
 
 
 # view1 = simple.CreateView("myfirstview")
