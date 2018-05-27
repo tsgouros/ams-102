@@ -219,8 +219,11 @@ class AMSRenderViewCollection(object):
 
         return newKey
 
-    def getView(self, i):
-        return self.renderViews[i]
+    def getView(self, viewID):
+        return self.renderViews[viewID]
+
+    def useView(self, viewID):
+        self.renderViews[viewID].makeActive()
 
     def getPrimary(self):
         return self.renderViews[ self.primaryID ]
