@@ -265,11 +265,11 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
 
         # Select a render view, and create a viz object for it, using the
         # given data set and recipe.
-        self.renderViews.useView(view)
+        #self.renderViews.useView(view)
         self.renderViews.getView(view).addViz(self.dataObjects.getObject(dataName), vizName, vizRecipe)
 
         # Execute that viz object.
-        self.renderViews.getPrimary().drawViz()
+        self.renderViews.getView(view).drawViz()
 
         # This makes the client update its view.
         self.getApplication().InvokeEvent('UpdateEvent')

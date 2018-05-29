@@ -198,7 +198,7 @@ class AMSRenderViewCollection(object):
         self.addView()
 
         # But make the primary one active.
-        self.getPrimary().makeActive()
+        #self.getPrimary().makeActive()
 
     def __getitem__(self, i):
         if isinstance(i, (int, long)):

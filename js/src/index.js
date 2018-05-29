@@ -76,7 +76,7 @@ const AMSProtocols = {
       },
 
       executeViz: (view, value) => {
-        session.call('amsprotocol.execute.viz', [ view, value ])
+        session.call('amsprotocol.execute.viz', [ view.toString(), value ])
           .then((result) => console.log('execute viz result: ' + result));
         console.log("******* execute viz ------>", view, value, "<<<");
       },

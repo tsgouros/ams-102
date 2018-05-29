@@ -341,6 +341,19 @@ class AMSPlot extends React.Component {
   render() {
     console.log("rendering AMSPlot:", this.model);
 
+    if (this.props.viewIDList.length > 1) {
+      if (this.rendererOne.getViewId() < 0) {
+        console.log("linking rendererOne to: ", this.props.viewIDList, 0);
+        this.rendererOne.setViewId(Number(this.props.viewIDList[0]));
+      }
+
+      if (this.rendererTwo.getViewId() < 0) {
+        console.log("linking rendererTwo to: ", this.props.viewIDList, 1);
+        this.rendererTwo.setViewId(Number(this.props.viewIDList[1]));
+      }
+    };
+
+
     this.vizDialogSpec.EnumContourVariable.ui.domain =
       Object.keys(this.props.dataCatalog["m100rpm"].variables).reduce(
         function(res, cur) {
@@ -370,9 +383,9 @@ class AMSPlot extends React.Component {
         <div style={{display: 'table-row',
                      width: '100vw',
                     }}>
-          <div style={{display: 'table-cell',
-                       width: this.rendererTwoVisible ? '50%' : '100%',
-                      }}>
+        <div style={{display: 'table-cell',
+                     width: this.rendererTwoVisible ? '50%' : '100%',
+                    }}>
             <AMSControlPanel model={this.model}
                              vizCatalog={this.vizCatalog}
                              dataCatalog={this.props.dataCatalog}
