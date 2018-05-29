@@ -63,11 +63,6 @@ const AMSProtocols = {
         console.log("------- getting render view ids --------");
       },
 
-      showTankGeometry: ( view ) => {
-        session.call('amsprotocol.show.tank.geometry', [ view ])
-          .then((result) => console.log('result', result));
-        console.log("******* pressed tankgeometry *******");
-      },
 
       clearAll: ( view ) => {
         session.call('amsprotocol.clear.all', [ view ])
@@ -81,24 +76,6 @@ const AMSProtocols = {
         console.log("******* execute viz ------>", view, value, "<<<");
       },
 
-      getDataCatalog: () => {
-        session.call('amsprotocol.get.data.catalog', [])
-          .then((result) => {
-            console.log('catalog result: ', result);
-            dataCatalog = result;
-          });
-        console.log("******* get data catalog ------<<<");
-      },
-
-      testButton: (testValue) => {
-        session.call('amsprotocol.get.render.view.ids', [ ])
-          .then((result) => {
-            console.log('**** result: ', result);
-            renderViewIDList = result;
-          });
-        console.log("******* testbutton ------>", testValue);
-      },
-
       heartbeatUpdate: () => {
         session.call('amsprotocol.heartbeat.update');
       },
@@ -110,7 +87,7 @@ const AMSProtocols = {
 const divTitle = document.createElement('div');
 divTitle.id = "divTitle";
 document.body.appendChild(divTitle);
-divTitle.innerHTML = '<h1>&nbsp;&nbsp;&nbsp;Hello Amgen World!</h1>';
+divTitle.innerHTML = '<h1>&nbsp;&nbsp;&nbsp;Hello World!</h1>';
 
 const divRoot = document.createElement('div');
 divRoot.id = "root";

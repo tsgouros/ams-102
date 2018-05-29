@@ -127,7 +127,7 @@ class AMSServer(pv_wslink.PVServerProtocol):
 
     @staticmethod
     def add_arguments(parser):
-        parser.add_argument("--dataConfigFile", default=None, help="Path to a data config file")  
+        parser.add_argument("--dataConfigFile", default=None, help="Path to a data config file")
 
         parser.add_argument("--virtual-env", default=None, help="Path to virtual environment to use")
         parser.add_argument("--dataDir", default=os.getcwd(), help="path to data directory to list", dest="data")
@@ -160,14 +160,9 @@ class AMSServer(pv_wslink.PVServerProtocol):
     def initialize(self):
 
         # Bring used components
-#        self.registerVtkWebProtocol(pv_protocols.ParaViewWebFileListing(AMSServer.data, "Home", AMSServer.excludeRegex, AMSServer.groupRegex))
-#        self.registerVtkWebProtocol(pv_protocols.ParaViewWebColorManager())
         self.registerVtkWebProtocol(pv_protocols.ParaViewWebMouseHandler())
-#        self.registerVtkWebProtocol(pv_protocols.ParaViewWebTimeHandler())
         self.registerVtkWebProtocol(pv_protocols.ParaViewWebViewPort(AMSServer.viewportScale, AMSServer.viewportMaxWidth, AMSServer.viewportMaxHeight))
         self.registerVtkWebProtocol(pv_protocols.ParaViewWebPublishImageDelivery(decode=False))
-#        self.registerVtkWebProtocol(pv_protocols.ParaViewWebViewPortImageDelivery())
-#        self.registerVtkWebProtocol(pv_protocols.ParaViewPublishImageDelivery())
 
         amstest = AMSProtocols.AMSTest(AMSServer.config, AMSServer.profile)
 
@@ -186,11 +181,6 @@ class AMSServer(pv_wslink.PVServerProtocol):
         simple.GetRenderView().EnableRenderOnInteraction = 0
         simple.GetRenderView().Background = [0,0,0]
         simple.GetRenderView().Background2 = [0,0,0]
-
-        if self.dataConfig:
-            amstest.initializeData( self.dataConfig["dataCatalog"] )
-        else:
-            amstest.initializeData( ["/Users/tomfool/tech/18/amgen/ams-102-AgileViz/EnSight/mat-viz-mofTFF-90L-9.1lpm-100rpm/mat-viz-mofTFF-90L-9.1lpm-100rpm.case", "/Users/tomfool/tech/18/amgen/ams-102-AgileViz/EnSight/mat-viz-mofTFF-90L-9.1lpm-250rpm/mat-viz-mofTFF-90L-9.1lpm-250rpm.case" ])
 
          # Update interaction mode
         pxm = simple.servermanager.ProxyManager()

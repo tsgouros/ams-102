@@ -54,78 +54,19 @@ class AMSConfig(pv_protocols.ParaViewWebProtocol):
     def getDefaultProfile(self):
         return [self.config, self.defaultProfile]
 
-# =============================================================================
-
-def ColorBy(rep=None, value=None):
-    """
-    Set scalar color. This will automatically setup the color maps and others
-    necessary state for the representations. 'rep' must be the display
-    properties proxy i.e. the value returned by GetDisplayProperties() function.
-    If none is provided the display properties for the active source will be
-    used, if possible.
-    """
-    rep = rep if rep else simple.GetDisplayProperties()
-    if not rep:
-        raise ValueError ("No display properties can be determined.")
-
-    association = rep.ColorArrayName.GetAssociation()
-    arrayname = rep.ColorArrayName.GetArrayName()
-    component = None
-    if value == None:
-        rep.SetScalarColoring(None, servermanager.GetAssociationFromString(association))
-        return
-    if not isinstance(value, tuple) and not isinstance(value, list):
-        value = (value,)
-    if len(value) == 1:
-        arrayname = value[0]
-    elif len(value) >= 2:
-        association = value[0]
-        arrayname = value[1]
-    if len(value) == 3:
-        # component name provided
-        componentName = value[2]
-        if componentName == "Magnitude":
-          component = -1
-        else:
-          if association == "POINTS":
-            array = rep.Input.PointData.GetArray(arrayname)
-          if association == "CELLS":
-            array = rep.Input.CellData.GetArray(arrayname)
-          if array:
-            # looking for corresponding component name
-            for i in range(0, array.GetNumberOfComponents()):
-              if componentName == array.GetComponentName(i):
-                component = i
-                break
-              # none have been found, try to use the name as an int
-              if i ==  array.GetNumberOfComponents() - 1:
-                try:
-                  component = int(componentName)
-                except ValueError:
-                  pass
-    if component is None:
-      rep.SetScalarColoring(arrayname, servermanager.GetAssociationFromString(association))
-    else:
-      rep.SetScalarColoring(arrayname, servermanager.GetAssociationFromString(association), component)
-    # rep.RescaleTransferFunctionToDataRange()
 
 class AMSRenderView(object):
     """
     A VTK render view, along with the plotting apparatus and information
     about it that is currently being displayed with it.  In our conception
     of these objects, a render view contains a "viz" object that holds the
-    data being visualized and the recipe used to visualize it.  The render
-    object may or may not be displaying that object, depending on whether
-    the drawViz() method has been called.  (The object itself might be
-    hidden, too, but that's a different detail.)
-
     """
-    def __init__(self):
+    def __init__(self, type):
 
         self.RV = simple.CreateView("RenderView")
         self.viewID = self.RV.GetGlobalIDAsString()
-        self.currentViz = None
-        self.tankVisible = False
+
+        self.type = type
 
     def getRV(self):
         return self.RV
@@ -136,49 +77,65 @@ class AMSRenderView(object):
     def link(self, renderViewToLink):
         simple.AddCameraLink(renderViewToLink, self.RV, self.viewID + "LINK")
 
-    def addViz(self, dataObject, vizName, vizRecipe):
-        print "addViz:", dataObject, vizName, vizRecipe
-        if isinstance(dataObject, AMSDataObject) and \
-           isinstance(vizRecipe, dict):
-            self.currentViz = AMSViz(dataObject, vizName, vizRecipe)
-            self.tankVisible = False
-        else:
-            print "bad viz argument"
-            exit()
-
     def drawViz(self):
-        if self.currentViz:
-            self.currentViz.draw(self.RV)
-
-    def drawTank(self):
-        if self.currentViz:
-            self.currentViz.drawTankGeometry(self.RV)
-            self.tankVisible = True
-
-    def eraseTank(self):
-        if self.currentViz:
-            self.currentViz.eraseTankGeometry(self.RV)
-            self.tankVisible = False
-
-    def toggleTank(self):
-        if self.tankVisible:
-            self.eraseTank()
+        if self.type == "sphere":
+            self.drawSphere(self.RV)
         else:
-            self.drawTank()
+            self.drawCone(self.RV)
 
-    def makeActive(self):
-        simple.SetActiveView(self.RV)
 
-    def takeStandardView(self):
+    def drawSphere(self, RV):
 
-        # A standard camera placement, arbitrarily chosen.  Choose another
-        # if you like.
-        self.RV.CameraPosition = [1.305, -1.323, -0.0171]
-        self.RV.CameraFocalPoint = [-0.0524, 0.0326, -0.302]
-        self.RV.CameraViewUp = [-0.505, -0.338, 0.793]
-        self.RV.CameraParallelScale = 0.502
+        # create a new Sphere object
+        self.sphere1 = simple.Sphere()
+
+        # set active source
+        simple.SetActiveSource(self.sphere1)
+
+        # show data in view
+        self.sphere1Display = simple.Show(self.sphere1, self.RV)
+
+        # trace defaults for the display properties.
+        self.sphere1Display.Representation = 'Surface'
+
+        # reset view to fit data
+        self.RV.ResetCamera()
+
+        # change solid color
+        self.sphere1Display.DiffuseColor = [0.0, 0.666, 1.0]
+
+        # reset view to fit data
+        self.RV.ResetCamera()
+
+        # update the view to ensure updated data information
         self.RV.Update()
 
+
+    def drawCone(self, RV):
+
+        # create a new Cone object
+        self.cone1 = simple.Cone()
+
+        # set active source
+        simple.SetActiveSource(self.cone1)
+
+        # show data in view
+        self.cone1Display = simple.Show(self.cone1, self.RV)
+
+        # trace defaults for the display properties.
+        self.cone1Display.Representation = 'Surface'
+
+        # reset view to fit data
+        self.RV.ResetCamera()
+
+        # change solid color
+        self.cone1Display.DiffuseColor = [0.666, 0.0, 1.0]
+
+        # reset view to fit data
+        self.RV.ResetCamera()
+
+        # update the view to ensure updated data information
+        self.RV.Update()
 
 
 class AMSRenderViewCollection(object):
@@ -190,51 +147,20 @@ class AMSRenderViewCollection(object):
     def __init__(self):
         self.renderViews = {}
 
-        # There will always be the first render view, and we call it the
-        # primary.
-        self.primaryID = self.addView()
-
-        # For now, we'll always have at least two render views.
-        self.addView()
-
-        # But make the primary one active.
-        #self.getPrimary().makeActive()
-
     def __getitem__(self, i):
         if isinstance(i, (int, long)):
             return self.renderViews[self.renderViews.keys()[i]]
         else:
             return None
 
-    def addView(self):
-
-        newView = AMSRenderView()
-        newKey = newView.getID()
-        self.renderViews[ newKey ] = newView
-
-        # If this is not the first, link it to a previous one.
-        # i = len(self.renderList) - 1
-        # if i > 1:
-        #     self.renderList[i].link(self.renderList[i - 1])
-
-        return newKey
+    def addView(self, RV):
+        self.renderViews[ RV.getID() ] = RV
 
     def getView(self, viewID):
         return self.renderViews[viewID]
 
-    def useView(self, viewID):
-        self.renderViews[viewID].makeActive()
-
-    def getPrimary(self):
-        return self.renderViews[ self.primaryID ]
-
     def getIDList(self):
-        keyList = self.renderViews.keys()
-
-        # We promise the primary key will always be first in the list.
-        keyList.remove(self.primaryID)
-        keyList.insert(0, self.primaryID)
-        return keyList
+        return self.renderViews.keys()
 
 
 # view1 = simple.CreateView("myfirstview")

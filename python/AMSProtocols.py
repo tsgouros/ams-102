@@ -131,39 +131,15 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         self.config = config
         self.profile = profile
 
-        # This is the list of catalog names, file names, what's in
-        # them, and so on.
-        self.dataCatalog = {}
-
-
-        # This is a set of render views on which things can be drawn.  Think
-        # of these as being attached to different render windows over on the
-        # client.
-        self.renderViews = AMSRenderViewCollection()
-
-        # The collection of data objects.  Each entry is a file, and all the
-        # variables and what-have-you that can be read from it.  The
-        # authoritative version of this collection is over here on the
-        # server.
-        self.dataObjects = AMSDataObjectCollection()
-
-        # The variety of ways one might look at all the objects.  The client
-        # can add to this collection, and the authoritative version of the
-        # collection is over there on the client.
-        self.vizCookBook = AMSCookBook()
-
-        # This is a combination of data and viz recipe that makes a single
-        # visualization.
-        self.currentViz = AMSViz(None, None, None)
-
-        self.toggle = True
-        self.data0on = True
-        self.data1on = False
-
         # A time stamp to keep from overloading the server.
         self.lastTime = 0
 
         self.debug = True
+
+        self.renderViews = AMSRenderViewCollection()
+        self.renderViews.addView(AMSRenderView("sphere"))
+        self.renderViews.addView(AMSRenderView("cone"))
+
 
     def printDebug(self):
         if self.debug:
@@ -172,64 +148,9 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
             functionName = traceback.extract_stack(None, 2)[0][2]
             print("calling " + functionName + " for " + self.name)
 
-    def initializeData(self, inputDataCatalog):
-        """
-        Initialize data from the data catalog.
-        """
-        for entry in inputDataCatalog.keys():
-            self.addObject(entry, \
-                           AMSDataObject(inputDataCatalog[entry], \
-                                         self.renderViews.getPrimary().getRV()))
-
-        self.renderViews.getPrimary().takeStandardView()
-
-    def getInput(self):
-        return self.dataset
-
-    def addObject(self, name, dataObject):
-        if isinstance(dataObject, AMSDataObject):
-            self.dataObjects.addObject(name, dataObject)
-
     @exportRPC('amsprotocol.get.render.view.ids')
     def getViews(self):
         return self.renderViews.getIDList()
-
-    @exportRPC("amsprotocol.get.data.catalog")
-    def getDataCatalog(self):
-        """
-        Returns the data catalog to the client.  Also reviews the data as
-        it passes through to get the variable names and ranges.
-        """
-        # The data catalog on the client isn't exactly the same as the
-        # data catalog over here, so we have to build an 'ad hoc' catalog
-        # to those specs.
-        adHocCatalog = dict()
-
-        # Loop through the data entries.
-        for key in self.dataObjects.keys():
-            adHocCatalog[key] = {
-                "fileName": self.dataObjects[key].getDataFile(),
-                "description": self.dataObjects[key].getDescription(),
-                "variables": self.dataObjects[key].getVariables()
-            }
-
-            # Gather the variable names and ranges.
-            for variable in self.dataObjects[key].caseData.PointData:
-                adHocCatalog[key]["variables"][variable.GetName()] = {
-                    "range": variable.GetRange(-1),
-                    "components": variable.GetNumberOfComponents() }
-
-        return adHocCatalog
-
-
-    @exportRPC("amsprotocol.show.tank.geometry")
-    def showTankGeometry(self, view):
-
-        print "View specified:", view
-        self.renderViews.getPrimary().toggleTank()
-        self.getApplication().InvokeEvent('UpdateEvent')
-
-
 
     @exportRPC("amsprotocol.heartbeat.update")
     def heartbeatUpdate(self):
@@ -249,24 +170,7 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         # source, which hopefully is an entry in the data catalog.  The
         # authoritative copy of the data catalog is over here, so need not be
         # included in the data passed from the client.
-        print "execute.viz", view, arg
-
-        vizName = arg["visualization"]
-        vizRecipe = arg["vizCatalog"][vizName]
-        dataName = arg["data"]
-
-        # The recipe we're receiving is either not in our current catalog, or
-        # it is and should be replaced with this one.  Remember, the client
-        # has the authoritative recipe collection.
-        self.vizCookBook.addRecipe(vizName, vizRecipe)
-
-        if self.debug:
-            self.vizCookBook.printBook()
-
-        # Select a render view, and create a viz object for it, using the
-        # given data set and recipe.
-        #self.renderViews.useView(view)
-        self.renderViews.getView(view).addViz(self.dataObjects.getObject(dataName), vizName, vizRecipe)
+        print "execute.viz", view
 
         # Execute that viz object.
         self.renderViews.getView(view).drawViz()
