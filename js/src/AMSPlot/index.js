@@ -317,6 +317,16 @@ class AMSPlot extends React.Component {
 
     console.log("show state in returnVizCatalogEntry:", this.currentViz, this.vizCatalog, this.vizDialogSpec);
 
+    // Data repair section: Is there anything we need to do to the dialog
+    // output before using it in a visualization?
+
+    // First, we take care to make sure the color values are all numbers.  The
+    // built-in code forces 0<x<1, but it doesn't prevent blanks or NaN.
+    this.vizDialogSpec.ContourColor.data.value =
+      this.vizDialogSpec.ContourColor.data.value.map(
+        (x) => { return isNaN(x) ? 0.0 : x; }
+      );
+
     var newEntryName = this.vizDialogSpec.CellPlotName.data.value;
     var newEntry = Object.values(this.vizDialogSpec).reduce(function(res, val) {
       if (val.widgetType === "cell" && val.ui.type === "string") {

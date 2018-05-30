@@ -272,11 +272,22 @@ class AMSViz(object):
         # trace defaults for the display properties.
         contourDisplay.Representation = 'Surface'
 
-        # show color bar/color legend
-        contourDisplay.SetScalarBarVisibility(RV, True)
+        if self.vizRecipe.get('CheckColorType'):
 
-        # set scalar coloring
-        ColorBy(contourDisplay, ('POINTS', self.vizRecipe.get('EnumColorVariable'), 'Magnitude'))
+            # Color the contour with a solid color, as specified.
+            print "****** coloring with a solid color:", self.vizRecipe.get('ContourColor')
+
+            contourDisplay.DiffuseColor = self.vizRecipe.get('ContourColor')
+
+        else:
+            # Color the contour with color keyed to another variable.
+            print "******* coloring with another variable:", self.vizRecipe.get('EnumColorVariable')
+
+            # show color bar/color legend
+            contourDisplay.SetScalarBarVisibility(RV, True)
+
+            # set scalar coloring
+            ColorBy(contourDisplay, ('POINTS', self.vizRecipe.get('EnumColorVariable'), 'Magnitude'))
 
         # Hide the scalar bar for this color map if no visible data is
         # colored by it.
