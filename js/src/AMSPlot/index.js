@@ -37,7 +37,7 @@ class AMSPlot extends React.Component {
       "default": {
         EnumPlotType:  "contour",
         EnumContourVariable:  "uds_0_scalar",
-        DoubleContourValue:  400,
+        DoubleContourValue:  [400],
         EnumColorVariable: "pressure",
         CellPlotName: "plot name",
       }
@@ -311,7 +311,7 @@ class AMSPlot extends React.Component {
 
     var newEntryName = this.vizDialogSpec.CellPlotName.data.value;
     var newEntry = Object.values(this.vizDialogSpec).reduce(function(res, val) {
-      if (val.widgetType === "cell") {
+      if (val.widgetType === "cell" && val.ui.type === "string") {
         res[val.data.id] = val.data.value[0];
       } else {
         res[val.data.id] = val.data.value;
