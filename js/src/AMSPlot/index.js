@@ -43,7 +43,7 @@ class AMSPlot extends React.Component {
       }
     };
 
-    this.rendererTwoVisible = true;
+    this.rendererTwoVisible = false;
 
     this.rendererOne = {};
     this.rendererTwo = {};
