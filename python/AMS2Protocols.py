@@ -263,13 +263,9 @@ class AMSViz(object):
         # create a new 'Contour'
         contour = simple.Contour(Input=self.dataObject.getData())
 
-        #print "DoubleContourValue", self.vizRecipe.get('DoubleContourValue')
-        #print "EnumContourVariable", self.vizRecipe.get('EnumContourVariable')
         # Properties modified on contour
-        #contour.ContourBy = ['POINTS', self.vizRecipe.get('enum.contour.variable')]
-        contour.ContourBy = ['POINTS', 'uds_0_scalar']
+        contour.ContourBy = ['POINTS', self.vizRecipe.get('EnumContourVariable')]
         contour.Isosurfaces = self.vizRecipe.get('DoubleContourValue')
-
 
         # show data in view
         contourDisplay = simple.Show(contour, RV)
