@@ -101,7 +101,7 @@ const AMSProtocols = {
 const divTitle = document.createElement('div');
 divTitle.id = "divTitle";
 document.body.appendChild(divTitle);
-divTitle.innerHTML = '<h1>&nbsp;&nbsp;&nbsp;Hello Amgen World!</h1>';
+divTitle.innerHTML = '<h1 style="height: 8vh; padding: 0px; margin: 0px">&nbsp;&nbsp;&nbsp;AMS-102</h1>';
 
 const divRoot = document.createElement('div');
 divRoot.id = "root";
