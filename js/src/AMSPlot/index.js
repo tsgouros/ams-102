@@ -202,11 +202,7 @@ class AMSPlot extends React.Component {
           componentLabels: [''],
         },
         show: () => {
-          if (this.vizDialogSpec.EnumPlotType.data.value === "contour") {
-            return true;
-          } else {
-            return false;
-          }
+          return (this.vizDialogSpec.EnumPlotType.data.value === "contour");
         },
         onChange: function onChange(data) {
           this.vizDialogSpec[data.id].data.value = data.value[0];
@@ -228,11 +224,28 @@ class AMSPlot extends React.Component {
           componentLabels: [''],
         },
         show: () => {
-          if (this.vizDialogSpec.EnumPlotType.data.value === "contour") {
-            return true;
-          } else {
-            return false;
-          }
+          return (this.vizDialogSpec.EnumPlotType.data.value === "contour");
+        },
+        onChange: function onChange(data) {
+          this.vizDialogSpec[data.id].data.value = data.value;
+          this.render();
+        }
+      },
+      CheckColorType: {
+        data: {value: false, id: "CheckColorType" },
+        widgetType: "checkbox",
+        depth: 14,
+        ui: {
+          propType: "checkbox",
+          label: "Solid color?",
+          domain: [0, 1],
+          type: "string",
+          layout: '1',
+          help: "Check to use solid color instead of a variable for a contour.",
+          componentLabels: ["c"],
+        },
+        show: () => {
+          return (this.vizDialogSpec.EnumPlotType.data.value === "contour");
         },
         onChange: function onChange(data) {
           this.vizDialogSpec[data.id].data.value = data.value;
@@ -260,40 +273,35 @@ class AMSPlot extends React.Component {
           help: "Which variable to color the contour or streamline?",
           componentLabels: [''],
         },
-        show: () => true,
+        show: () => {
+          return (!this.vizDialogSpec.CheckColorType.data.value);
+        },
         onChange: function onChange(data) {
           this.vizDialogSpec[data.id].data.value = data.value[0];
           data.value = this.vizDialogSpec[data.id].data.value;
           this.render();
         }
       },
-      // {
-      //   name: "contour value",
-      //   widgetType: "slider",
-      //   vals: [0.0, 800.0],
-      //   selected: [400.0],
-      //   id: "DoubleContourValue",
-      //   dataType: "double",
-      //   help: "Select a contour value",
-      // },
-      // {
-      //   name: "some other value",
-      //   widgetType: "cell",
-      //   vals: [0, 1],
-      //   selected: [0.5],
-      //   id: "CellValue",
-      //   dataType: "double",
-      //   help: "A little help text...",
-      // },
-      // {
-      //   name: "still another value",
-      //   widgetType: "cell",
-      //   vals: [0, 10],
-      //   selected: [5],
-      //   id: "CellValue2",
-      //   dataType: "int",
-      //   help: "A little help text...",
-      // },
+      ContourColor: {
+        data: {value: [0,0,0], id: "ContourColor" },
+        widgetType: "cell",
+        depth: 18,
+        ui: {
+          propType: "cell",
+          label: "Color",
+          domain: { range: [{min: 0.0, max: 1.0, force: true}] },
+          type: "double",
+          layout: '3',
+          componentLabels: ["r", "g", "b"],
+        },
+        show: () => {
+          return (this.vizDialogSpec.CheckColorType.data.value);
+        },
+        onChange: function onChange(data) {
+          this.vizDialogSpec[data.id].data.value = data.value;
+          this.render();
+        }
+      },
     };
 
     for (var key in this.vizDialogSpec) {
