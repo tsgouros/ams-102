@@ -189,34 +189,49 @@ class AMSRenderViewCollection(object):
     have the same viewing position.
     """
     def __init__(self):
-        self.renderList = []
+        self.renderViews = {}
+
+        self.addView()
 
         # There will always be the first render view, and we call it the
         # primary.
-        self.addView()
+        self.primaryID = self.addView()
+
 
     def __getitem__(self, i):
         if isinstance(i, (int, long)):
-            return self.renderList[i]
+            return self.renderViews[self.renderViews.keys[i]]
         else:
             return None
 
     def addView(self):
-        self.renderList.append(AMSRenderView())
 
-        # If this is not the first, link it to a previous one.
-        i = len(self.renderList) - 1
-        if i > 1:
-            self.renderList[i].link(self.renderList[i - 1])
+        newView = AMSRenderView()
+        newKey = newView.getID()
+        self.renderViews[ newKey ] = newView
 
-        return self.renderList[i]
+        return newKey
 
-    def getView(self, i):
-        return self.renderList[i]
+    def getView(self, key):
+
+        if not key in self.renderViews.keys():
+            print "don't have key ", key, " returning primary view:", self.primaryID
+            simple.SetActiveView(self.getPrimary().getRV())
+            return self.getPrimary()
+
+        else:
+            return self.renderViews[key]
 
     def getPrimary(self):
-        return self.renderList[0]
+        return self.renderViews[ self.primaryID ]
 
+    def getIDList(self):
+        keyList = self.renderViews.keys()
+
+        # We promise the primary key will always be first in the list.
+        keyList.remove(self.primaryID)
+        keyList.insert(0, self.primaryID)
+        return keyList
 
 
 # view1 = simple.CreateView("myfirstview")
@@ -281,21 +296,14 @@ class AMSViz(object):
 
         # get color transfer function/color map for the data to color with.
         dataLUT = simple.GetColorTransferFunction(self.vizRecipe.get('EnumColorVariable'))
-        print "getting color variable...", self.vizRecipe.get('EnumColorVariable')
-
 
         if self.vizRecipe.get('CheckColorType'):
 
             # Color the contour with a solid color, as specified.
-            print "****** coloring with a solid color:", self.vizRecipe.get('ContourColor')
-
             contourDisplay.DiffuseColor = self.vizRecipe.get('ContourColor')
 
         else:
             # Color the contour with color keyed to another variable.
-            print "******* coloring with another variable:", self.vizRecipe.get('EnumColorVariable')
-
-            # set scalar coloring
             ColorBy(contourDisplay, ('POINTS', self.vizRecipe.get('EnumColorVariable'), 'Magnitude'))
 
             # show color bar/color legend

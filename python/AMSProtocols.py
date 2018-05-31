@@ -190,11 +190,9 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         if isinstance(dataObject, AMSDataObject):
             self.dataObjects.addObject(name, dataObject)
 
-    @exportRPC('amsprotocol.get.view.id')
-    def getViews(self, i):
-        return {
-            "viewID": self.renderViewCollection.getViewID(i)
-        }
+    @exportRPC('amsprotocol.get.render.view.ids')
+    def getViews(self):
+        return self.renderViews.getIDList()
 
     @exportRPC("amsprotocol.get.data.catalog")
     def getDataCatalog(self):
@@ -247,10 +245,10 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
 
         # Select a render view, and create a viz object for it, using the
         # given data set and recipe.
-        self.renderViews.getPrimary().addViz(self.dataObjects.getObject(dataName), vizName, vizRecipe)
+        self.renderViews.getView(view).addViz(self.dataObjects.getObject(dataName), vizName, vizRecipe)
 
         # Execute that viz object.
-        self.renderViews.getPrimary().drawViz()
+        self.renderViews.getView(view).drawViz()
 
         # This makes the client update its view.
         self.getApplication().InvokeEvent('UpdateEvent')
