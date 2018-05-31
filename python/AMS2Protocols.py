@@ -137,7 +137,11 @@ class AMSRenderView(object):
         simple.AddCameraLink(renderViewToLink, self.RV, self.viewID + "LINK")
 
     def addViz(self, dataObject, vizName, vizRecipe):
-        print "addViz:", dataObject, vizName, vizRecipe
+        """
+        Add a visualization to this render view.  This links the data object
+        and the visualization recipe to use, but it does not actually draw it.
+        Use the drawViz() method for that.
+        """
         if isinstance(dataObject, AMSDataObject) and \
            isinstance(vizRecipe, dict):
             self.currentViz = AMSViz(dataObject, vizName, vizRecipe)
@@ -234,6 +238,8 @@ class AMSViz(object):
         self.vizName = vizName
         self.vizRecipe = vizRecipe
 
+        self.tankGeometryInit = False
+
         self.debug = True
 
     def draw(self, RV):
@@ -257,11 +263,12 @@ class AMSViz(object):
 
     def makeContour(self, RV):
 
-        # get color transfer function/color map for the data to color with.
-        dataLUT = simple.GetColorTransferFunction(self.vizRecipe.get('EnumColorVariable'))
+        extractedBlock = simple.ExtractBlock(Input=self.dataObject.getData())
+        # Properties modified on extractBlock1
+        extractedBlock.BlockIndices = [1, 2]
 
         # create a new 'Contour'
-        contour = simple.Contour(Input=self.dataObject.getData())
+        contour = simple.Contour(Input=extractedBlock)
 
         # Properties modified on contour
         contour.ContourBy = ['POINTS', self.vizRecipe.get('EnumContourVariable')]
@@ -271,6 +278,11 @@ class AMSViz(object):
         contourDisplay = simple.Show(contour, RV)
         # trace defaults for the display properties.
         contourDisplay.Representation = 'Surface'
+
+        # get color transfer function/color map for the data to color with.
+        dataLUT = simple.GetColorTransferFunction(self.vizRecipe.get('EnumColorVariable'))
+        print "getting color variable...", self.vizRecipe.get('EnumColorVariable')
+
 
         if self.vizRecipe.get('CheckColorType'):
 
@@ -283,11 +295,11 @@ class AMSViz(object):
             # Color the contour with color keyed to another variable.
             print "******* coloring with another variable:", self.vizRecipe.get('EnumColorVariable')
 
-            # show color bar/color legend
-            contourDisplay.SetScalarBarVisibility(RV, True)
-
             # set scalar coloring
             ColorBy(contourDisplay, ('POINTS', self.vizRecipe.get('EnumColorVariable'), 'Magnitude'))
+
+            # show color bar/color legend
+            contourDisplay.SetScalarBarVisibility(RV, True)
 
         # Hide the scalar bar for this color map if no visible data is
         # colored by it.
@@ -302,6 +314,59 @@ class AMSViz(object):
         RV.Update()
 
     def makeStream(self, RV):
+
+        # create a new 'Stream Tracer'
+        streamTracer = simple.StreamTracer(Input=self.dataObject.getData(),
+                                           SeedType='High Resolution Line Source')
+        streamTracer.SeedType = 'Point Source'
+
+        streamTracer.Vectors = ['POINTS', 'velocity']
+
+        # Properties modified on streamTracer1.SeedType
+        streamTracer.SeedType.Center = [0.0, 0.0, -0.4]
+
+        # Properties modified on streamTracer1
+        streamTracer.MaximumStreamlineLength = 1.5
+        streamTracer.SeedType.NumberOfPoints = 100;
+
+        # show data in view
+        streamTracerDisplay = simple.Show(streamTracer, RV)
+        # trace defaults for the display properties.
+        streamTracerDisplay.Representation = 'Surface'
+
+        # hide data in view
+        simple.Hide(streamTracer, RV)
+
+        #create a new 'Tube'
+        tube1 = simple.Tube(Input=streamTracer)
+        tube1.Scalars = ['POINTS', 'pressure']
+        tube1.Vectors = ['POINTS', 'Normals']
+        tube1.Radius = 0.001
+
+        # show data in view
+        tube1Display = simple.Show(tube1, RV)
+
+        ColorBy(tube1Display, ('POINTS', self.vizRecipe.get('EnumColorVariable')))
+
+        # rescale color and/or opacity maps used to include current data range
+        tube1Display.RescaleTransferFunctionToDataRange(True, False)
+
+        # show color bar/color legend
+        tube1Display.SetScalarBarVisibility(RV, True)
+
+        # get color transfer function/color map for 'uds_0_scalar'
+        colorLUT = simple.GetColorTransferFunction(self.vizRecipe.get('EnumColorVariable'))
+        colorLUT.RescaleTransferFunction(0, .2)
+        # Hide the scalar bar for this color map if no visible data is
+        # colored by it.
+        simple.HideScalarBarIfNotNeeded(colorLUT, RV)
+
+        # update the view to ensure updated data information
+        RV.Update()
+
+
+
+    def makeRibbon(self, RV):
 
         # get color transfer function/color map for the data to color with.
         dataLUT = simple.GetColorTransferFunction(self.vizRecipe.get('EnumColorVariable'))
@@ -383,33 +448,31 @@ class AMSViz(object):
     def drawTankGeometry(self, RV):
         self.printDebug()
 
-        # create a new 'Contour'
-        self.tankGeometry = simple.Contour(Input=self.dataObject.caseData)
-        self.tankGeometry.PointMergeMethod = 'Uniform Binning'
+        if not self.tankGeometryInit:
+            self.tankGeometry = simple.ExtractBlock(Input=self.dataObject.getData())
 
-        # Properties modified on self.tankGeometry
-        self.tankGeometry.ContourBy = ['POINTS', 'wall_shear']
-        self.tankGeometry.Isosurfaces = [0.0002]
+            # Properties modified on tankGeometry
+            self.tankGeometry.BlockIndices = [3, 6, 7, 4, 5, 9]
 
-        # show data in view
-        self.tankGeometryDisplay = simple.Show(self.tankGeometry, RV)
+            self.tankGeometryDisplay = simple.Show(self.tankGeometry, RV)
+            self.tankGeometryDisplay.DiffuseColor = [0.0, 0.5, 0.5]
+            self.tankGeometryDisplay.Opacity = 0.3
 
-        # Some display properties.
-        self.tankGeometryDisplay.Representation = 'Surface'
-        self.tankGeometryDisplay.ColorArrayName = [None, '']
-        self.tankGeometryDisplay.OSPRayScaleFunction = 'PiecewiseFunction'
-        self.tankGeometryDisplay.OpacityArray = [None, '']
-        self.tankGeometryDisplay.OpacityTransferFunction = 'PiecewiseFunction'
-        self.tankGeometryDisplay.Opacity = 0.1
+            # trace defaults for the display properties.
+            self.tankGeometryDisplay.Representation = 'Surface'
+
+            self.tankGeometryInit = True
+
         self.tankGeometryDisplay.DiffuseColor = [0.0, 0.5, 0.5]
-
+        self.tankGeometryDisplay.Opacity = 0.3
         self.tankGeometryDisplay = simple.Show(self.tankGeometry, RV)
+
         RV.Update()
+
 
     def eraseTankGeometry(self, RV):
         self.tankGeometryDisplay = simple.Hide(self.tankGeometry, RV)
         RV.Update()
-
 
     def printDebug(self):
         if self.debug:
