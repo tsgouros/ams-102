@@ -445,6 +445,12 @@ class AMSDataObject(object):
         # Get variables and range data from the newly-opened file.
         self.variables = {}  #***************************TBD
 
+        # Gather the variable names and ranges.
+        for variable in self.caseData.PointData:
+            self.variables[variable.GetName()] = {
+                "range": variable.GetRange(-1),
+                "components": variable.GetNumberOfComponents() }
+
         # Set some defaults for the display properties.
         self.caseDataDisplay.Representation = 'Surface'
 
@@ -532,6 +538,25 @@ class AMSDataObjectCollection(object):
         """
         return AMSViz(self.index[name], cookBook.getRecipe(recipeName))
 
+
+    def getDataCatalogForTransmission(self):
+        """
+        The data catalog over here contains custom-defined objects.  We
+        need to build an 'ad hoc' catalog out of pure python dict types for
+        transmission.
+        """
+        adHocCatalog = dict()
+
+        # Loop through the data entries.
+        for key in self.index.keys():
+            adHocCatalog[key] = {
+                "fileName": self.index[key].getDataFile(),
+                "description": self.index[key].getDescription(),
+                # Variables is a pure dict, so it's ok here.
+                "variables": self.index[key].getVariables()
+            }
+
+        return adHocCatalog
 
 class AMSVizRecipe(object):
     """

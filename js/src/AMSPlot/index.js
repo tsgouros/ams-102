@@ -346,19 +346,21 @@ class AMSPlot extends React.Component {
   render() {
     console.log("rendering AMSPlot:", this.model);
 
-    this.vizDialogSpec.EnumContourVariable.ui.domain =
-      Object.keys(this.props.dataCatalog["m100rpm"].variables).reduce(
+    // We are assuming here that all the members of the data catalog share the
+    // same variable list.  This probably is not true, so there should be a
+    // check somewhere on the viz side in case we ask for a variable that
+    // isn't there.
+
+
+    const sortedVariables =  Object.keys(
+      this.props.dataCatalog["m100rpm"].variables).sort().reduce(
         function(res, cur) {
           res[cur] = cur;
           return res;
         }, {});
 
-    this.vizDialogSpec.EnumColorVariable.ui.domain =
-      Object.keys(this.props.dataCatalog["m100rpm"].variables).reduce(
-        function(res, cur) {
-          res[cur] = cur;
-          return res;
-        }, {});
+    this.vizDialogSpec.EnumContourVariable.ui.domain = sortedVariables;
+    this.vizDialogSpec.EnumColorVariable.ui.domain = sortedVariables;
 
 
 //      <button onClick={() => this.rendererTwoVisible = !this.rendererTwoVisible}>Two</button>

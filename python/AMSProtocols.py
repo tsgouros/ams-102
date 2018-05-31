@@ -202,27 +202,7 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         Returns the data catalog to the client.  Also reviews the data as
         it passes through to get the variable names and ranges.
         """
-        # The data catalog on the client isn't exactly the same as the
-        # data catalog over here, so we have to build an 'ad hoc' catalog
-        # to those specs.
-        adHocCatalog = dict()
-
-        # Loop through the data entries.
-        for key in self.dataObjects.keys():
-            adHocCatalog[key] = {
-                "fileName": self.dataObjects[key].getDataFile(),
-                "description": self.dataObjects[key].getDescription(),
-                "variables": self.dataObjects[key].getVariables()
-            }
-
-            # Gather the variable names and ranges.
-            for variable in self.dataObjects[key].caseData.PointData:
-                adHocCatalog[key]["variables"][variable.GetName()] = {
-                    "range": variable.GetRange(-1),
-                    "components": variable.GetNumberOfComponents() }
-
-        return adHocCatalog
-
+        return self.dataObjects.getDataCatalogForTransmission()
 
     @exportRPC("amsprotocol.show.tank.geometry")
     def showTankGeometry(self, view):
