@@ -39,7 +39,10 @@ var dataCatalog = {
   },
 };
 
-
+// We also need a 'master' data catalog entry that has the union of all the
+// variable lists from throughout the data catalog, along with the maximum
+// ranges of each of those variables.
+var masterVariables = {};
 
 // This is the collection of RPC functions supported by the pvpython server.
 // They are fed to the smartConnect function and returned as part of the
@@ -75,8 +78,32 @@ const AMSProtocols = {
       getDataCatalog: () => {
         session.call('amsprotocol.get.data.catalog', [])
           .then((result) => {
-            console.log('catalog result: ', result);
             dataCatalog = result;
+
+            // This sorts through all the entries in the catalog and comes up
+            // with a summary entry that has a superset of all the variable sets
+            // and maximum ranges for each variable.  Note that this means that
+            // you may be able to ask for visualizations that cannot be
+            // rendered, so a later check on variables is necessary.
+            masterVariables = Object.values(dataCatalog).reduce(
+              function (res, entry) {
+                Object.keys(entry.variables).forEach(
+                  function(variable) {
+                    if (res && variable in Object.keys(res)) {
+                      res[variable].range[0] =
+                        min(res[variable].range[0],
+                            entry.variables[variable].range[0]);
+                      res[variable].range[1] =
+                        max(res[variable].range[1],
+                            entry.variables[variable].range[1]);
+                    } else {
+                      res[variable] = entry.variables[variable];
+                    }
+                  }
+                );
+                return res;
+              }, {});
+            console.log('catalog result: ', result, masterVariables);
           });
         console.log("******* get data catalog ------<<<");
       },
@@ -114,6 +141,7 @@ function next() {
   console.log("hi there, about to call render");
   ReactDOM.render(<AMSPlot
                      dataCatalog={dataCatalog}
+                     masterVariables={masterVariables}
                      config={AMSConfig}
                      protocols={AMSProtocols}
                   />,

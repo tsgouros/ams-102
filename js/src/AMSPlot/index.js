@@ -25,10 +25,6 @@ class AMSPlot extends React.Component {
     super(props);
     console.log("Constructing AMSPlot:", props);
 
-    this.state = {
-      dataCatalog: props.dataCatalog,
-    };
-
     // This is the visualization cookbook, a collection of visualization recipes
     // that can be applied to the data sources.  It is a an association of names
     // and descriptions of visualizations.  This is the authoritative copy,
@@ -47,6 +43,7 @@ class AMSPlot extends React.Component {
 
     this.rendererOne = {};
     this.rendererTwo = {};
+
 
     // Create our 'smart connection' object using the config sent down
     // via props.
@@ -187,6 +184,7 @@ class AMSPlot extends React.Component {
         ui: {
           propType: "enum",
           label: "Contour variable",
+          // This is just a dummy list, replaced in the render() method.
           domain: ["uds_0_scalar",
                    "pressure",
                    "axial_velocity",
@@ -207,6 +205,20 @@ class AMSPlot extends React.Component {
         onChange: function onChange(data) {
           this.vizDialogSpec[data.id].data.value = data.value[0];
           data.value = this.vizDialogSpec[data.id].data.value;
+          // Retrieve data variable range.
+          this.vizDialogSpec.DoubleContourValue.ui.domain.range[0].min =
+            this.props.masterVariables[data.value].range[0];
+          this.vizDialogSpec.DoubleContourValue.ui.domain.range[0].max =
+            this.props.masterVariables[data.value].range[1];
+          this.vizDialogSpec.DoubleContourValue.ui.label =
+            "Contour value (" +
+            this.props.masterVariables[data.value].range[0].toFixed(2) + ", " +
+            this.props.masterVariables[data.value].range[1].toFixed(2) + ")";
+          this.vizDialogSpec.DoubleContourValue.data.value = [
+            0.01 * Math.trunc(100 *
+              (this.props.masterVariables[data.value].range[0] +
+               this.props.masterVariables[data.value].range[1]) / 2.0)
+            ];
           this.render();
         }
       },
@@ -216,7 +228,7 @@ class AMSPlot extends React.Component {
         depth: 12,
         ui: {
           propType: "cell",
-          label: "Contour value",
+          label: "Contour value (0.0, 800.0)",
           domain: { range: [{ min: 0.0, max: 800.0, force: true }] },
           type: "double",
           layout: '1',
@@ -259,6 +271,7 @@ class AMSPlot extends React.Component {
         ui: {
           propType: "enum",
           label: "Color variable",
+          // This is just a dummy list, replaced in the render() method.
           domain: ["pressure",
                    "uds_0_scalar",
                    "axial_velocity",
@@ -350,7 +363,6 @@ class AMSPlot extends React.Component {
     // same variable list.  This probably is not true, so there should be a
     // check somewhere on the viz side in case we ask for a variable that
     // isn't there.
-
 
     const sortedVariables =  Object.keys(
       this.props.dataCatalog["m100rpm"].variables).sort().reduce(
