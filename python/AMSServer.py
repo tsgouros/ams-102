@@ -127,7 +127,7 @@ class AMSServer(pv_wslink.PVServerProtocol):
 
     @staticmethod
     def add_arguments(parser):
-        parser.add_argument("--dataConfigFile", default=None, help="Path to a data config file")  
+        parser.add_argument("--dataConfigFile", default=None, help="Path to a data config file")
 
         parser.add_argument("--virtual-env", default=None, help="Path to virtual environment to use")
         parser.add_argument("--dataDir", default=os.getcwd(), help="path to data directory to list", dest="data")
@@ -177,9 +177,8 @@ class AMSServer(pv_wslink.PVServerProtocol):
         # Update authentication key to use
         self.updateSecret(AMSServer.authKey)
 
-        # tell the C++ web app to use no
-        # encoding. ParaViewWebPublishImageDelivery must be set to
-        # decode=False to match.
+        # tell the C++ web app to use no encoding.
+        # ParaViewWebPublishImageDelivery must be set to decode=False to match.
         self.getApplication().SetImageEncoding(0);
 
         # Disable interactor-based render calls
@@ -188,9 +187,10 @@ class AMSServer(pv_wslink.PVServerProtocol):
         simple.GetRenderView().Background2 = [0,0,0]
 
         if self.dataConfig:
-            amstest.initializeData( self.dataConfig["dataCatalog"] )
+          amstest.initializeData( self.dataConfig["dataCatalog"] )
         else:
-            amstest.initializeData( ["/Users/tomfool/tech/18/amgen/ams-102-AgileViz/EnSight/mat-viz-mofTFF-90L-9.1lpm-100rpm/mat-viz-mofTFF-90L-9.1lpm-100rpm.case", "/Users/tomfool/tech/18/amgen/ams-102-AgileViz/EnSight/mat-viz-mofTFF-90L-9.1lpm-250rpm/mat-viz-mofTFF-90L-9.1lpm-250rpm.case" ])
+          print "You have not supplied a data config file.  I cannot proceed."
+          exit()
 
          # Update interaction mode
         pxm = simple.servermanager.ProxyManager()

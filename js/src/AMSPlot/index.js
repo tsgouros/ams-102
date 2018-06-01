@@ -39,7 +39,7 @@ class AMSPlot extends React.Component {
       }
     };
 
-    this.rendererTwoVisible = false;
+    this.rendererTwoVisible = true;
 
     // Create our 'smart connection' object using the config sent down
     // via props.
@@ -110,12 +110,19 @@ class AMSPlot extends React.Component {
             console.log("******* pressed clear all *******");
           },
 
-          // createRenderer () => {
-          //   session.call('amsprotocol.create.renderer', [])
-          //     .then((result) => {
-          //       console.log('create renderer result: ', result);
-          //       rendererList.push(VtkRenderer.newInstance({
-          //         client: model
+          createRenderer: (container) => {
+            session.call('amsprotocol.create.renderer', [container])
+              .then((result) => {
+                console.log('create renderer result: ', result);
+                this.renderers.push(VtkRenderer.newInstance({
+                  client: this.model.pvwClient,
+                  viewId: result,
+                }) );
+                this.renderers[this.renderers.length - 1].setContainer(
+                  document.getElementById(container));
+              });
+            console.log("*** sending for another viewID");
+          },
 
           executeViz: (view, value) => {
             session.call('amsprotocol.execute.viz', [ view, value ])
@@ -189,19 +196,12 @@ class AMSPlot extends React.Component {
                                          'VtkImageDelivery',
                                        ],
                                        this.protocols);
-      // Create a vtk renderer.
-      this.renderers[0] = VtkRenderer.newInstance({
-        client: this.model.pvwClient,
-        viewId: 'renderOne'
-      });
-      this.renderers[1] = VtkRenderer.newInstance({
-        client: this.model.pvwClient,
-        viewId: 'renderTwo'
-      });
 
-      // Place it in the container set up for it.
-      this.renderers[0].setContainer(document.getElementById("renderContainerOne"));
-      this.renderers[1].setContainer(document.getElementById("renderContainerTwo"));
+      // Create a couple of vtk renderers and place them in the containers
+      // set up for them.
+      this.model.pvwClient.amsService.createRenderer("renderContainerOne");
+      this.model.pvwClient.amsService.createRenderer("renderContainerTwo");
+
       // renderer.onImageReady(() => {
       //   console.log('image ready (for next command)');
       // });
@@ -243,12 +243,15 @@ class AMSPlot extends React.Component {
 
   onDrawCommandOne(drawCommand) {
     console.log("onDrawCommand is to execute:", drawCommand);
-    this.model.pvwClient.amsService.executeViz('338',drawCommand);
+    console.log("using view:", this.renderers[0], this.renderers[0].getViewId());
+    this.model.pvwClient.amsService.executeViz(this.renderers[0].getViewId(),
+                                               drawCommand);
   }
 
   onDrawCommandTwo(drawCommand) {
     console.log("onDrawCommand is to execute:", drawCommand);
-    this.model.pvwClient.amsService.executeViz('two',drawCommand);
+    this.model.pvwClient.amsService.executeViz(this.renderers[1].getViewId(),
+                                               drawCommand);
   }
 
   buildVizDialogSpecs() {

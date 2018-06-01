@@ -174,14 +174,16 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
 
     def initializeData(self, inputDataCatalog):
         """
-        Initialize data from the data catalog.
+        Initialize data from the data catalog.  Using a disposable render view
+        since apparently you need one to initialize the data (for real? why?),
+        but it's too soon to use one of the actual render views.
         """
+        renderView = AMSRenderView()
+
         for entry in inputDataCatalog.keys():
             self.addObject(entry, \
                            AMSDataObject(inputDataCatalog[entry], \
-                                         self.renderViews.getPrimary().getRV()))
-
-        self.renderViews.getPrimary().takeStandardView()
+                                         renderView.getRV()))
 
     def getInput(self):
         return self.dataset
@@ -209,7 +211,11 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         self.renderViews.getPrimary().toggleTank()
         self.getApplication().InvokeEvent('UpdateEvent')
 
+    @exportRPC("amsprotocol.create.renderer")
+    def createRenderer(self, container):
+        result = self.renderViews.addView(container)
 
+        return result
 
     @exportRPC("amsprotocol.heartbeat.update")
     def heartbeatUpdate(self):

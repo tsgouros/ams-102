@@ -118,7 +118,6 @@ class AMSRenderView(object):
     object may or may not be displaying that object, depending on whether
     the drawViz() method has been called.  (The object itself might be
     hidden, too, but that's a different detail.)
-
     """
     def __init__(self):
 
@@ -189,13 +188,14 @@ class AMSRenderViewCollection(object):
     have the same viewing position.
     """
     def __init__(self):
+
+        # This is a dict keyed with the viewID of the render views.
         self.renderViews = {}
+        self.primaryID = "NONE"
 
-        self.addView()
-
-        # There will always be the first render view, and we call it the
-        # primary.
-        self.primaryID = self.addView()
+        # This dict is keyed by the names associated with the views
+        # via the argument to the addView() method.
+        self.names = {}
 
 
     def __getitem__(self, i):
@@ -204,13 +204,26 @@ class AMSRenderViewCollection(object):
         else:
             return None
 
-    def addView(self):
+    def addView(self, name):
 
-        newView = AMSRenderView()
-        newKey = newView.getID()
-        self.renderViews[ newKey ] = newView
+        # Have we already seen this name before?  Just return the viewID and
+        # do nothing else.
+        if name in self.names.keys():
+            return self.renderViews[ self.names[ name ]].getID()
+            # This should be the same as self.names[name]. We do it this way
+            # mostly for kicks, but also for some error tolerance.
 
-        return newKey
+        else:
+            # Otherwise, create a new render view and add it to the list.
+            newView = AMSRenderView()
+            newKey = newView.getID()
+            self.renderViews[ newKey ] = newView
+            self.names[ name ] = newKey
+
+            if len(self.renderViews) == 1:
+                self.primaryID = newKey
+
+            return newKey
 
     def getView(self, key):
 
@@ -514,9 +527,7 @@ class AMSDataObject(object):
         self.caseDataDisplay = simple.Show(self.caseData, RV)
 
         # Get variables and range data from the newly-opened file.
-        self.variables = {}  #***************************TBD
-
-        # Gather the variable names and ranges.
+        self.variables = {}
         for variable in self.caseData.PointData:
             self.variables[variable.GetName()] = {
                 "range": variable.GetRange(-1),
