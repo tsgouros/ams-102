@@ -222,6 +222,8 @@ class AMSRenderViewCollection(object):
 
             if len(self.renderViews) == 1:
                 self.primaryID = newKey
+            else:
+                newView.link(self.getPrimary().getRV())
 
             return newKey
 
