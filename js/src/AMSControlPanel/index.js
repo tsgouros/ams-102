@@ -166,7 +166,7 @@ class AMSControlPanel extends React.Component {
 
     return (
         <center>
-        <div style={{width: this.props.width, display: 'inline-block'}}>
+        <div style={{display: 'inline-block'}}>
         <AMSPlotDialog buttonLabel="Choose plot to draw"
                        title="Select visualization"
                        closeLabel="Draw"

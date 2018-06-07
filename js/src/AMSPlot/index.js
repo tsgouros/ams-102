@@ -13,18 +13,17 @@ import SmartConnect from 'wslink/src/SmartConnect';
 // control panel takes care of what exactly is shown in the render
 // view object.
 
-
-//
-// 1. Move render canvas from above down to here.  DONE
-// 2. Move edit plot description from the control panel to this object. DONE
-// 3. Add a second renderer.
-
-
 class AMSPlot extends React.Component {
   constructor(props) {
     super(props);
     console.log("Constructing AMSPlot:", props);
 
+    // We keep track of whether rendererTwo is visible, and also
+    // whether the window has been 'resized' since it was made
+    // invisible/visible last.
+    this.rendererTwoVisible = true;
+    this.OldRendererTwoVisible = false;
+    
     // This is the visualization cookbook, a collection of visualization recipes
     // that can be applied to the data sources.  It is a an association of names
     // and descriptions of visualizations.  This is the authoritative copy,
@@ -38,8 +37,6 @@ class AMSPlot extends React.Component {
         CellPlotName: "plot name",
       }
     };
-
-    this.rendererTwoVisible = true;
 
     // Create our 'smart connection' object using the config sent down
     // via props.
@@ -483,6 +480,12 @@ class AMSPlot extends React.Component {
   render() {
     console.log("rendering AMSPlot:", this.model);
 
+    // This is here in case you hide one of the views, or try to bring it back.
+    // It pretends to resize the window so the canvas elements will also
+    // resize.  It probably doesn't need to be called on every render, but the
+    // downside seems limited.
+    SizeHelper.triggerChange();
+    
     // We are assuming here that all the members of the data catalog share the
     // same variable list.  This probably is not true, so there should be a
     // check somewhere on the viz side in case we ask for a variable that
@@ -500,31 +503,32 @@ class AMSPlot extends React.Component {
 
 
 //      <button onClick={() => this.rendererTwoVisible = !this.rendererTwoVisible}>Two</button>
-
+    console.log("renderer list:", this.renderers);
 
     return (
-        <div style={{ width: '100vw', display: 'table' }}>
+        <div style={{ width: '100%', display: 'table' }}>
         <AMSPlotDialog buttonLabel="Edit plot descriptions"
                        title="Edit plot descriptions"
                        dialogSpec={this.vizDialogSpec}
                        closeLabel="Save"
                        returnDialogResults={this.returnVizCatalogEntry}
         />
+        <button onClick={()=>{this.rendererTwoVisible = !this.rendererTwoVisible;}}>
+        {this.rendererTwoVisible? "hide" : "show"} second
+        </button>
         <div style={{display: 'table-row',
-                     width: '100vw',
                     }}>
-          <div style={{display: 'table-cell',
-                       width: this.rendererTwoVisible ? '50%' : '100%',
-                      }}>
+            <div style={{display: 'table-cell',
+                         width: this.rendererTwoVisible ? '50%' : '100%',
+                        }}>
             <AMSControlPanel model={this.model}
                              vizCatalog={this.vizCatalog}
                              dataCatalog={this.dataCatalog}
                              executeDrawCommand={this.onDrawCommandOne}
-                             view='renderers[0]'
+                         view={this.renderers[0]?this.renderers[0].getViewId():""}
             />
             <div id="renderContainerOne"
                  style={{position: 'relative',
-                         width: '100%',
                          height: '80vh',
                          overflow: 'hidden',
                          zIndex: '10',
@@ -539,12 +543,10 @@ class AMSPlot extends React.Component {
                              vizCatalog={this.vizCatalog}
                              dataCatalog={this.dataCatalog}
                              executeDrawCommand={this.onDrawCommandTwo}
-                             view='renderers[1]'
-                             width='50%'
+                         view={this.renderers[1]?this.renderers[1].getViewId():""}
             />
             <div id="renderContainerTwo"
                  style={{position: 'relative',
-                         width: '100%',
                          height: '80vh',
                          overflow: 'hidden',
                          zIndex: '10',

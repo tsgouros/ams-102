@@ -205,10 +205,10 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         return self.dataObjects.getDataCatalogForTransmission()
 
     @exportRPC("amsprotocol.show.tank.geometry")
-    def showTankGeometry(self, view):
+    def showTankGeometry(self, viewID):
 
-        print "View specified:", view
-        self.renderViews.getPrimary().toggleTank()
+        print "View specified:", viewID
+        self.renderViews.getView(viewID).toggleTank()
         self.getApplication().InvokeEvent('UpdateEvent')
 
     @exportRPC("amsprotocol.create.renderer")

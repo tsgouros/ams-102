@@ -230,6 +230,7 @@ class AMSRenderViewCollection(object):
     def getView(self, key):
 
         if not key in self.renderViews.keys():
+            print type(key)
             print "don't have key ", key, " returning primary view:", self.primaryID
             simple.SetActiveView(self.getPrimary().getRV())
             return self.getPrimary()
