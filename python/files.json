@@ -16,5 +16,23 @@
       "description": "Two hundred fifty RPM data from some funny shaped vessel.",
       "variables": {}
     }
+  },
+  "vizCookBook": {
+    "default": {
+      "EnumPlotType":  "contour",
+      "EnumContourVariable":  "uds_0_scalar",
+      "DoubleContourValue":  [400],
+      "EnumColorVariable": "pressure",
+      "CellPlotName": "default contour"
+    },
+    "defaultStream": {
+      "EnumPlotType": "streamlines",
+      "EnumColorVariable":  "pressure",
+      "CellPlotName":  "default streamlines",
+      "ContourColor":  [0, 0, 0],
+      "EnumContourVariable":  "uds_0_scalar",
+      "DoubleContourValue":  [400],
+      "CheckColorType":  false
+    }      
   }
 }

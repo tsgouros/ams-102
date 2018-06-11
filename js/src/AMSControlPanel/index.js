@@ -52,9 +52,6 @@ class AMSControlPanel extends React.Component {
     // we have the authoritative vizCatalog.  The vizCatalog is the state of
     // the client and the dataCatalog is part of the server's state.  Thus,
     // references to the dataCatalog over here go through props.
-    this.state = {
-      vizCatalog: props.vizCatalog,
-    };
 
     // The dialog specs are built from the client state, to show the user a
     // menu of options.
@@ -149,7 +146,7 @@ class AMSControlPanel extends React.Component {
     this.props.executeDrawCommand({
       visualization: this.currentViz,
       data: this.currentData,
-      vizCatalog: this.state.vizCatalog,
+      vizCatalog: this.props.vizCatalog,
     });
 
     this.render();

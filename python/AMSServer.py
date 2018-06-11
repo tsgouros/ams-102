@@ -187,7 +187,7 @@ class AMSServer(pv_wslink.PVServerProtocol):
         simple.GetRenderView().Background2 = [0,0,0]
 
         if self.dataConfig:
-          amstest.initializeData( self.dataConfig["dataCatalog"] )
+          amstest.initializeData( self.dataConfig )
         else:
           print "You have not supplied a data config file.  I cannot proceed."
           exit()

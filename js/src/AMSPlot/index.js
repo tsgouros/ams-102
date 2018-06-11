@@ -127,6 +127,15 @@ class AMSPlot extends React.Component {
             console.log("******* execute viz ------>", view, value, "<<<");
           },
 
+          getInitialVizCookBook: () => {
+            session.call('amsprotocol.get.initial.viz.cookbook', [])
+              .then((result) => {
+                this.vizCatalog = result;
+                console.log('viz catalog result: ', result);
+              });
+            console.log("******* get viz cookbook ------>");
+          },
+
           getDataCatalog: () => {
             session.call('amsprotocol.get.data.catalog', [])
               .then((result) => {
@@ -214,6 +223,8 @@ class AMSPlot extends React.Component {
       // starter version of the viz catalog.
       this.model.pvwClient.amsService.getDataCatalog();
 
+      this.model.pvwClient.amsService.getInitialVizCookBook();
+      
       console.log("connection ready, data returned:", this.model);
     });
 

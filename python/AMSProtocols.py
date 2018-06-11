@@ -151,7 +151,8 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         # can add to this collection, and the authoritative version of the
         # collection is over there on the client.
         self.vizCookBook = AMSCookBook()
-
+        self.inputVizCookBook = {}
+        
         # This is a combination of data and viz recipe that makes a single
         # visualization.
         self.currentViz = AMSViz(None, None, None)
@@ -172,7 +173,7 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
             functionName = traceback.extract_stack(None, 2)[0][2]
             print("calling " + functionName + " for " + self.name)
 
-    def initializeData(self, inputDataCatalog):
+    def initializeData(self, inputData):
         """
         Initialize data from the data catalog.  Using a disposable render view
         since apparently you need one to initialize the data (for real? why?),
@@ -180,11 +181,15 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         """
         renderView = AMSRenderView()
 
+        inputDataCatalog = inputData["dataCatalog"]
+        
         for entry in inputDataCatalog.keys():
             self.addObject(entry, \
                            AMSDataObject(inputDataCatalog[entry], \
                                          renderView.getRV()))
-
+        
+        self.inputVizCookBook = inputData["vizCookBook"]
+            
     def getInput(self):
         return self.dataset
 
@@ -196,8 +201,21 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
     def getViews(self):
         return self.renderViews.getIDList()
 
+    @exportRPC("amsprotocol.get.initial.viz.cookbook")
+    def getVizCookBook(self):
+        """
+        Returns an initial value of the viz cookbook to the client.  
+        The authoritative copy of the cookbook is on the client, so this 
+        is just the initial version, for convenience of having the 
+        data catalog and viz cookbook initialized in the same file.
+        """
+        print "returning vizCookBook", type(self.inputVizCookBook)
+        return self.inputVizCookBook
+        
+        
     @exportRPC("amsprotocol.get.data.catalog")
     def getDataCatalog(self):
+
         """
         Returns the data catalog to the client.  Also reviews the data as
         it passes through to get the variable names and ranges.
