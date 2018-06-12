@@ -213,6 +213,7 @@ class AMSPlot extends React.Component {
       // });
 
       SizeHelper.onSizeChange(() => {
+
         this.renderers[0].resize();
         this.renderers[1].resize();
       });
@@ -517,7 +518,7 @@ class AMSPlot extends React.Component {
     console.log("renderer list:", this.renderers);
 
     return (
-        <div style={{ width: '100%', display: 'table' }}>
+        <div style={{ width: '100%', display: 'table', tableLayout: 'fixed' }}>
         <AMSPlotDialog buttonLabel="Edit plot descriptions"
                        title="Edit plot descriptions"
                        dialogSpec={this.vizDialogSpec}
@@ -541,6 +542,7 @@ class AMSPlot extends React.Component {
             <div id="renderContainerOne"
                  style={{position: 'relative',
                          height: '80vh',
+                         resize: 'both',
                          overflow: 'hidden',
                          zIndex: '10',
                         }}
@@ -559,6 +561,7 @@ class AMSPlot extends React.Component {
             <div id="renderContainerTwo"
                  style={{position: 'relative',
                          height: '80vh',
+                         resize: 'both',
                          overflow: 'hidden',
                          zIndex: '10',
                         }}
