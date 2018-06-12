@@ -133,7 +133,7 @@ class AMSRenderView(object):
         return self.RV.GetGlobalIDAsString()
 
     def link(self, renderViewToLink):
-        simple.AddCameraLink(renderViewToLink, self.RV, self.viewID + "LINK")
+        simple.AddCameraLink(self.RV, renderViewToLink, self.viewID + "LINK")
 
     def addViz(self, dataObject, vizName, vizRecipe):
         """
@@ -230,7 +230,6 @@ class AMSRenderViewCollection(object):
     def getView(self, key):
 
         if not key in self.renderViews.keys():
-            print type(key)
             print "don't have key ", key, " returning primary view:", self.primaryID
             simple.SetActiveView(self.getPrimary().getRV())
             return self.getPrimary()

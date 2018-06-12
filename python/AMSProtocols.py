@@ -209,7 +209,6 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         is just the initial version, for convenience of having the 
         data catalog and viz cookbook initialized in the same file.
         """
-        print "returning vizCookBook", type(self.inputVizCookBook)
         return self.inputVizCookBook
         
         
@@ -225,7 +224,6 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
     @exportRPC("amsprotocol.show.tank.geometry")
     def showTankGeometry(self, viewID):
 
-        print "View specified:", viewID
         self.renderViews.getView(viewID).toggleTank()
         self.getApplication().InvokeEvent('UpdateEvent')
 
@@ -253,7 +251,6 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         # source, which hopefully is an entry in the data catalog.  The
         # authoritative copy of the data catalog is over here, so need not be
         # included in the data passed from the client.
-        print "execute.viz", view, arg
 
         vizName = arg["visualization"]
         vizRecipe = arg["vizCatalog"][vizName]
@@ -265,6 +262,7 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         self.vizCookBook.addRecipe(vizName, vizRecipe)
 
         if self.debug:
+            print "drawing ", vizName, " on ", dataName
             self.vizCookBook.printBook()
 
         # Select a render view, and create a viz object for it, using the
@@ -292,7 +290,6 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
     @exportRPC("amsprotocol.clear.all")
     def clearAll(self, view):
 
-        print "Clear view:", view
         self.currentViz.clearAll()
         self.getApplication().InvokeEvent('UpdateEvent')
 
