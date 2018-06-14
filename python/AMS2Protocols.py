@@ -231,6 +231,7 @@ class AMSRenderViewCollection(object):
 
         if not key in self.renderViews.keys():
             print "don't have key ", key, " returning primary view:", self.primaryID
+            print "Given key of type:", type(key), "need:", type(self.primaryID)
             simple.SetActiveView(self.getPrimary().getRV())
             return self.getPrimary()
 
@@ -383,6 +384,9 @@ class AMSViz(object):
         # Hide the scalar bar for this color map if no visible data is
         # colored by it.
         simple.HideScalarBarIfNotNeeded(colorLUT, RV)
+
+        # reset view to fit data
+        RV.ResetCamera()
 
         # update the view to ensure updated data information
         RV.Update()

@@ -285,6 +285,8 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
 
         arg['hello'] = 342.4
         arg['message'] = "******** executed testButton with: " + str(arg) + " *******"
+        self.getApplication().InvokeEvent('UpdateEvent')
+        
         return arg
 
     @exportRPC("amsprotocol.clear.all")

@@ -18,11 +18,8 @@ class AMSPlot extends React.Component {
     super(props);
     console.log("Constructing AMSPlot:", props);
 
-    // We keep track of whether rendererTwo is visible, and also
-    // whether the window has been 'resized' since it was made
-    // invisible/visible last.
+    // We keep track of whether rendererTwo is visible.
     this.rendererTwoVisible = true;
-    this.OldRendererTwoVisible = false;
     
     // This is the visualization cookbook, a collection of visualization recipes
     // that can be applied to the data sources.  It is a an association of names
@@ -96,7 +93,7 @@ class AMSPlot extends React.Component {
         return {
 
           showTankGeometry: ( view ) => {
-            session.call('amsprotocol.show.tank.geometry', [ view ])
+            session.call('amsprotocol.show.tank.geometry', [ String(view) ])
               .then((result) => console.log('result', result));
             console.log("******* pressed tankgeometry *******");
           },
@@ -117,12 +114,15 @@ class AMSPlot extends React.Component {
                 }) );
                 this.renderers[this.renderers.length - 1].setContainer(
                   document.getElementById(container));
+                // This is invoked here in order to attach the mouse handler.
+                this.renderers[this.renderers.length - 1].setViewId(result);
+                console.log("here's renderers:", this.renderers);
               });
             console.log("*** sending for another viewID");
           },
 
           executeViz: (view, value) => {
-            session.call('amsprotocol.execute.viz', [ view, value ])
+            session.call('amsprotocol.execute.viz', [ String(view), value ])
               .then((result) => console.log('result: ' + result));
             console.log("******* execute viz ------>", view, value, "<<<");
           },
@@ -493,11 +493,11 @@ class AMSPlot extends React.Component {
     console.log("rendering AMSPlot:", this.model);
 
     // This is here in case you hide one of the views, or try to bring it back.
-    // It pretends to resize the window so the canvas elements will also
-    // resize.  It probably doesn't need to be called on every render, but the
-    // downside seems limited.
+    // It pretends to resize the window so the canvas elements will also resize.
+    // It probably doesn't need to be called on every render, but that's an
+    // optimization left for the future.
     SizeHelper.triggerChange();
-    
+
     // We are assuming here that all the members of the data catalog share the
     // same variable list.  This probably is not true, so there should be a
     // check somewhere on the viz side in case we ask for a variable that
@@ -513,10 +513,6 @@ class AMSPlot extends React.Component {
     this.vizDialogSpec.EnumContourVariable.ui.domain = sortedVariables;
     this.vizDialogSpec.EnumColorVariable.ui.domain = sortedVariables;
 
-
-//      <button onClick={() => this.rendererTwoVisible = !this.rendererTwoVisible}>Two</button>
-    console.log("renderer list:", this.renderers);
-
     return (
         <div style={{ width: '100%', display: 'table', tableLayout: 'fixed' }}>
         <AMSPlotDialog buttonLabel="Edit plot descriptions"
@@ -525,12 +521,14 @@ class AMSPlot extends React.Component {
                        closeLabel="Save"
                        returnDialogResults={this.returnVizCatalogEntry}
         />
-        <button onClick={()=>{this.rendererTwoVisible = !this.rendererTwoVisible;}}>
+        <button onClick={()=>{
+          this.rendererTwoVisible = !this.rendererTwoVisible;
+        }}>
         {this.rendererTwoVisible? "hide" : "show"} second
         </button>
-        <div style={{display: 'table-row',
+        <div style={{display: 'table-row', 
                     }}>
-            <div style={{display: 'table-cell',
+            <div style={{display: 'table-cell', padding: '10px',
                          width: this.rendererTwoVisible ? '50%' : '100%',
                         }}>
             <AMSControlPanel model={this.model}
