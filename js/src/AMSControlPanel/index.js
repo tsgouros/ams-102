@@ -158,9 +158,6 @@ class AMSControlPanel extends React.Component {
     this.buildDrawDialogSpecs();
     //console.log("AMSControlPanel render: ", this.state);
 
-    var testy = {hello: 52.6};
-    //console.log("gto:", this.props.gto);
-
     return (
         <center>
         <div style={{display: 'inline-block'}}>
@@ -169,7 +166,7 @@ class AMSControlPanel extends React.Component {
                        closeLabel="Draw"
                        dialogSpec={this.drawDialogSpec}
                        returnDialogResults={this.returnDrawCommand}/>
-        <button onClick={() => this.props.model.pvwClient.amsService.testButton(testy)}>test</button>
+        <button onClick={() => this.props.model.pvwClient.amsService.testButton(this.props.view)}>test</button>
         <button onClick={() => this.props.model.pvwClient.amsService.showTankGeometry(this.props.view)}>tank</button>
         <button onClick={() => this.props.model.pvwClient.amsService.clearAll(this.props.view)}>clear</button>
         </div>

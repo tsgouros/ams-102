@@ -98,6 +98,12 @@ class AMSPlot extends React.Component {
             console.log("******* pressed tankgeometry *******");
           },
 
+          refreshView: ( view ) => {
+            session.call('amsprotocol.refresh.view', [ String(view) ])
+              .then((result) => { console.log('refresh result', result); });
+            console.log("******* made refresh request *******");
+          },                                  
+
           clearAll: ( view ) => {
             session.call('amsprotocol.clear.all', [ view ])
               .then((result) => console.log('result', result));
@@ -521,11 +527,6 @@ class AMSPlot extends React.Component {
                        closeLabel="Save"
                        returnDialogResults={this.returnVizCatalogEntry}
         />
-        <button onClick={()=>{
-          this.rendererTwoVisible = !this.rendererTwoVisible;
-        }}>
-        {this.rendererTwoVisible? "hide" : "show"} second
-        </button>
         <div style={{display: 'table-row', 
                     }}>
             <div style={{display: 'table-cell', padding: '10px',

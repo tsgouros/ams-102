@@ -243,7 +243,16 @@ class AMSTest(pv_protocols.ParaViewWebProtocol):
         self.getApplication().InvokeEvent('UpdateEvent')
         return "heart is beating"
 
+    @exportRPC("amsprotocol.refresh.view")
+    def refreshView(self, view):
 
+        self.renderViews.getView(view).refresh()
+
+        self.getApplication().InvokeEvent('UpdateEvent')
+
+        return "done"
+
+    
     @exportRPC("amsprotocol.execute.viz")
     def executeViz(self, view, arg):
         # The arg here is a dict that contains the selected visualization

@@ -169,6 +169,13 @@ class AMSRenderView(object):
         else:
             self.drawTank()
 
+    def refresh(self):
+
+#        self.RV.ResetCamera()
+
+        self.RV.Update()
+
+            
     def takeStandardView(self):
 
         # A standard camera placement, arbitrarily chosen.  Choose another
