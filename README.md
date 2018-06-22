@@ -33,3 +33,5 @@ Then go to a browser and open localhost:8080
 >             startCallback = lambda *args, **kwargs: self.startViewAnimation(realViewId)
 >             stopCallback = lambda *args, **kwargs: self.stopViewAnimation(realViewId)
 ```
+
+** We are told this will be fixed for Paraview 5.6.
