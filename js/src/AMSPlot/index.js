@@ -527,6 +527,11 @@ class AMSPlot extends React.Component {
                        closeLabel="Save"
                        returnDialogResults={this.returnVizCatalogEntry}
         />
+        <button onClick={()=>{
+          this.rendererTwoVisible = !this.rendererTwoVisible;
+        }}>
+        {this.rendererTwoVisible? "hide" : "show"} second
+        </button>
         <div style={{display: 'table-row', 
                     }}>
             <div style={{display: 'table-cell', padding: '10px',
@@ -547,8 +552,7 @@ class AMSPlot extends React.Component {
                         }}
             />
           </div>
-        { this.rendererTwoVisible ? (
-          <div style={{display: 'table-cell',
+        <div style={{display: this.rendererTwoVisible ? 'table-cell' : 'none',
                        width: '50%',
                       }}>
             <AMSControlPanel model={this.model}
@@ -566,7 +570,6 @@ class AMSPlot extends React.Component {
                         }}
             />
           </div>
-        ) : null }
        </div>
      </div>
     )

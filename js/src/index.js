@@ -34,25 +34,12 @@ function next() {
                   document.getElementById('root'));
 };
 
-// This may not be necessary, but for some configurations making sure to
-// re-render every now and then, need it or not, is a good idea.  Test to
-// find out.
-setInterval(next, 5000);
+// We re-render the plots at a regular interval, need it or not, to
+// accommodate whatever choice the user has made recently.  It all
+// works fine with this value set to 5000 (milliseconds), but it isn't
+// very responsive.  Make a lower value for better response, but also
+// more CPU usage.
+setInterval(next, 2000);
 
 next();
 
-// TODO:
-//
-// - Conditional rendering of visualization editor dialog.
-//
-// - Get plot possibilities from server (data catalog, plot varieties,
-//   variables that can be displayed, etc.)
-//
-// - Move renderer down a level so that it's all inside a single React
-// - component that encompasses the canvas and the draw dialog.
-//
-// - Can we put a second render window in place?
-//
-// - Can we control the rotation and view of the second window from the first?
-//
-//
