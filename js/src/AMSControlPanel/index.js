@@ -31,9 +31,11 @@ import NumberSliderWidget from 'paraviewweb/src/React/Widgets/NumberSliderWidget
 // function sent down for sending the output back up.
 //
 // State includes the input vizCatalog and dataCatalog.  The vizCatalog is
-// subject to modification by the vizDialog.
+// subject to modification by the vizDialog.  In this case, the state is
+// maintained at a higher level, and we're only keeping around the connection
+// via the props.
 //
-// Class also includes: vizDialogSpec, drawDialogSpec.  These are simple
+// Class also includes: vizDialogSpec, drawDialogSpec.  These are simple      
 // lists of dialog components and options.  Note that the drawDialogSpec
 // incorporates the keys of the dataCatalog and the vizCatalog (which is
 // modified by the vizDialog).

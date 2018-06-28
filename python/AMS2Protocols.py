@@ -270,6 +270,8 @@ class AMSViz(object):
     executed with the draw() method.  This is meant to be kept as part of a
     render view object, to represent what is visualized at the moment.
 
+    To add a plot type, follow the directions you'll find below marked with 
+    a "**".
     """
     def __init__(self, dataObject, vizName, vizRecipe):
         self.dataObject = dataObject
@@ -282,6 +284,8 @@ class AMSViz(object):
 
     def draw(self, RV):
 
+        # ** Add your plot type to this if statement.  This is the only value of
+        #    the plot recipe that is interpreted outside the 'make*' function.
         if self.vizRecipe.get('EnumPlotType') == 'contour':
             self.makeContour(RV)
         else:
@@ -299,6 +303,23 @@ class AMSViz(object):
             simple.Delete(f)
 
 
+    # ** Add another 'make*' function to accommodate your favorites visualiztion
+    #    here.  These functions are essentially copied from the Paraview-produced
+    #    "trace" function output, with the following changes:
+    #
+    # The trace output does 'import * from simple' and we do not.  This is an
+    # evil way to use classes, and over here we just do 'import simple' but as a
+    # result you have to name the functions with names like simple.Show() instead
+    # of Show().  No big deal.
+    #
+    # The parameters for the visualization itself are tucked into the input plot
+    # recipe.  They can be retrieved with 'self.plotRecipe.get()'.  Because the
+    # recipe is simply a javascript object, it's pretty free-form, and the only
+    # requirement to the code over here is that it match, more or less, the
+    # source on the client.  Refer to the setup in the json configuration
+    # file. for details about what the names are, but they could be anything, the
+    # limits are only that this function understand them.
+    
     def makeContour(self, RV):
 
         extractedBlock = simple.ExtractBlock(Input=self.dataObject.getData())
